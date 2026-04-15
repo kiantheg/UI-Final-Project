@@ -1,0 +1,94 @@
+{
+  "page": {
+    "title": "Cookie Simulator",
+    "description": "Adjust the ingredient levels, click Bake, and see what kind of cookie you created.",
+    "bake_button_label": "Bake",
+    "back_button_label": "Back to Learning",
+    "next_button_label": "Continue to Quiz Placeholder"
+  },
+  "levels": [
+    "low",
+    "medium",
+    "high"
+  ],
+  "normalization": {
+    "medium-high": "high",
+    "medium high": "high",
+    "medium_high": "high"
+  },
+  "ingredients": [
+    {
+      "key": "butter",
+      "label": "Butter",
+      "description": "Controls spread. More butter usually makes cookies flatter.",
+      "default_level": "medium"
+    },
+    {
+      "key": "flour",
+      "label": "Flour",
+      "description": "Adds structure. More flour usually makes cookies thicker.",
+      "default_level": "medium"
+    },
+    {
+      "key": "white_sugar",
+      "label": "White Sugar",
+      "description": "Adds crispiness and encourages spread.",
+      "default_level": "medium"
+    },
+    {
+      "key": "brown_sugar",
+      "label": "Brown Sugar",
+      "description": "Adds moisture and makes cookies softer or chewier.",
+      "default_level": "medium"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "flat_cookie",
+      "cookie_type": "Flat Cookie",
+      "requirements": {
+        "butter": "high",
+        "white_sugar": "medium",
+        "flour": "low"
+      },
+      "explanation": "High butter increases spread and low flour gives the dough less structure, so the cookie bakes flat."
+    },
+    {
+      "id": "chewy_cookie",
+      "cookie_type": "Chewy Cookie",
+      "requirements": {
+        "butter": "medium",
+        "brown_sugar": "high",
+        "flour": [
+          "medium",
+          "high"
+        ]
+      },
+      "explanation": "High brown sugar adds moisture and medium-to-high flour gives enough structure, so the cookie turns out chewy."
+    },
+    {
+      "id": "thick_cookie",
+      "cookie_type": "Thick Cookie",
+      "requirements": {
+        "butter": "low",
+        "brown_sugar": "medium",
+        "flour": "high"
+      },
+      "explanation": "Low butter limits spread while high flour adds structure, so the cookie stays thick."
+    },
+    {
+      "id": "crispy_cookie",
+      "cookie_type": "Crispy Cookie",
+      "requirements": {
+        "butter": "high",
+        "white_sugar": "high",
+        "flour": "medium"
+      },
+      "explanation": "High butter and high white sugar encourage spread and crispiness, while medium flour keeps the cookie from getting too thick."
+    }
+  ],
+  "fallback_result": {
+    "cookie_type": "Goop!",
+    "explanation": "This combination did not create a recognizable cookie type. Try adjusting your ingredient levels and baking again."
+  }
+}

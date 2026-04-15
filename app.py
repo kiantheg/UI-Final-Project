@@ -7,15 +7,25 @@ from flask import Flask, abort, redirect, render_template, request, url_for
 
 BASE_DIR = Path(__file__).resolve().parent
 CONTENT_FILE = BASE_DIR / "data" / "course_content.json"
+SIMULATOR_FILE = BASE_DIR / "data" / "simulator_content.json"
 STATE_FILE = BASE_DIR / "instance" / "user_state.json"
 
 app = Flask(__name__)
 
 
+def load_json_file(file_path):
+    with file_path.open(encoding="utf-8") as json_file:
+        return json.load(json_file)
+
+
 def load_content():
     """Load the shared course content so routes stay data-driven."""
-    with CONTENT_FILE.open(encoding="utf-8") as content_file:
-        return json.load(content_file)
+    return load_json_file(CONTENT_FILE)
+
+
+def load_simulator_content():
+    """Load simulator definitions and recipe rules from structured data."""
+    return load_json_file(SIMULATOR_FILE)
 
 
 def timestamp():
@@ -31,6 +41,8 @@ def default_state():
         "last_updated": None,
         "learning_steps_visited": [],
         "learning_selections": [],
+        "simulator_visits": 0,
+        "simulator_runs": [],
         "quiz_answers": [],
         "actions": [],
     }
@@ -48,7 +60,18 @@ def load_state():
         save_state(default_state())
 
     with STATE_FILE.open(encoding="utf-8") as state_file:
-        return json.load(state_file)
+        state = json.load(state_file)
+
+    state_updated = False
+    for key, value in default_state().items():
+        if key not in state:
+            state[key] = value
+            state_updated = True
+
+    if state_updated:
+        save_state(state)
+
+    return state
 
 
 def append_action(state, action_type, **details):
@@ -93,11 +116,100 @@ def record_quiz_visit(step):
     save_state(state)
 
 
+def record_simulator_entry():
+    state = load_state()
+    state["simulator_visits"] += 1
+    append_action(state, "simulator_entered", visit_number=state["simulator_visits"])
+    save_state(state)
+
+
+def record_simulator_run(selections, result):
+    state = load_state()
+    state["simulator_runs"].append(
+        {
+            "timestamp": timestamp(),
+            "ingredients": selections,
+            "cookie_type": result["cookie_type"],
+            "recipe_id": result.get("recipe_id"),
+        }
+    )
+    append_action(
+        state,
+        "simulator_baked",
+        ingredients=selections,
+        cookie_type=result["cookie_type"],
+    )
+    save_state(state)
+
+
 def get_learning_step(learning_steps, step_number):
     for step in learning_steps:
         if step["step"] == step_number:
             return step
     return None
+
+
+def build_default_selections(simulator_data):
+    selections = {}
+    for ingredient in simulator_data["ingredients"]:
+        selections[ingredient["key"]] = ingredient.get("default_level", "medium")
+    return selections
+
+
+def normalize_level(level, simulator_data):
+    if not isinstance(level, str):
+        return None
+
+    cleaned_level = level.strip().lower().replace("_", "-")
+    normalization = simulator_data.get("normalization", {})
+    return normalization.get(cleaned_level, cleaned_level)
+
+
+def parse_simulator_selections(form_data, simulator_data):
+    selections = build_default_selections(simulator_data)
+    invalid_fields = []
+    allowed_levels = set(simulator_data["levels"])
+
+    for ingredient in simulator_data["ingredients"]:
+        key = ingredient["key"]
+        normalized_level = normalize_level(form_data.get(key), simulator_data)
+        if normalized_level not in allowed_levels:
+            invalid_fields.append(ingredient["label"])
+            continue
+        selections[key] = normalized_level
+
+    return selections, invalid_fields
+
+
+def recipe_matches(selections, recipe, simulator_data):
+    for ingredient_key, expected_levels in recipe["requirements"].items():
+        if not isinstance(expected_levels, list):
+            expected_levels = [expected_levels]
+
+        normalized_expected_levels = [
+            normalize_level(level, simulator_data) for level in expected_levels
+        ]
+        if selections.get(ingredient_key) not in normalized_expected_levels:
+            return False
+
+    return True
+
+
+def evaluate_simulator_result(selections, simulator_data):
+    for recipe in simulator_data["recipes"]:
+        if recipe_matches(selections, recipe, simulator_data):
+            return {
+                "cookie_type": recipe["cookie_type"],
+                "explanation": recipe["explanation"],
+                "recipe_id": recipe["id"],
+            }
+
+    fallback_result = simulator_data["fallback_result"]
+    return {
+        "cookie_type": fallback_result["cookie_type"],
+        "explanation": fallback_result["explanation"],
+        "recipe_id": None,
+    }
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -126,6 +238,16 @@ def learn_step(step):
     current_index = step_numbers.index(step)
     previous_step = step_numbers[current_index - 1] if current_index > 0 else None
     next_step = step_numbers[current_index + 1] if current_index < len(step_numbers) - 1 else None
+    next_url = (
+        url_for("learn_step", step=next_step)
+        if next_step
+        else url_for("simulator")
+    )
+    next_button_label = (
+        step_data.get("next_button_label", "Continue")
+        if next_step
+        else "Go to Simulator"
+    )
 
     return render_template(
         "learning.html",
@@ -133,7 +255,36 @@ def learn_step(step):
         total_steps=len(learning_steps),
         previous_step=previous_step,
         next_step=next_step,
-        next_button_label=step_data.get("next_button_label", "Continue"),
+        next_button_label=next_button_label,
+        next_url=next_url,
+    )
+
+
+@app.route("/simulator", methods=["GET", "POST"])
+def simulator():
+    simulator_data = load_simulator_content()
+    selections = build_default_selections(simulator_data)
+    result = None
+    error_message = None
+
+    if request.method == "GET":
+        record_simulator_entry()
+    else:
+        selections, invalid_fields = parse_simulator_selections(request.form, simulator_data)
+        if invalid_fields:
+            error_message = "Please choose a valid level for: {}.".format(
+                ", ".join(invalid_fields)
+            )
+        else:
+            result = evaluate_simulator_result(selections, simulator_data)
+            record_simulator_run(selections, result)
+
+    return render_template(
+        "simulator.html",
+        simulator=simulator_data,
+        selections=selections,
+        result=result,
+        error_message=error_message,
     )
 
 
@@ -145,7 +296,7 @@ def quiz_step(step):
         "placeholder.html",
         page_title=content["quiz_placeholder"]["title"],
         message=content["quiz_placeholder"]["message"],
-        back_url=url_for("learn_step", step=len(content["learning_steps"])),
+        back_url=url_for("simulator"),
         next_url=url_for("results"),
         next_label="View Results Placeholder",
     )

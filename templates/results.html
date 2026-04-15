@@ -17,6 +17,12 @@
 
           <dt class="col-sm-4">Learning steps visited</dt>
           <dd class="col-sm-8">{{ state.learning_steps_visited|join(", ") or "None" }}</dd>
+
+          <dt class="col-sm-4">Simulator visits</dt>
+          <dd class="col-sm-8">{{ state.simulator_visits }}</dd>
+
+          <dt class="col-sm-4">Simulator runs</dt>
+          <dd class="col-sm-8">{{ state.simulator_runs|length }}</dd>
         </dl>
       </div>
     </div>

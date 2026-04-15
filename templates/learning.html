@@ -37,15 +37,9 @@
             </a>
           {% endif %}
 
-          {% if next_step %}
-            <a class="btn btn-primary" href="{{ url_for('learn_step', step=next_step) }}">
-              {{ next_button_label }}
-            </a>
-          {% else %}
-            <a class="btn btn-primary" href="{{ url_for('quiz_step', step=1) }}">
-              {{ next_button_label }}
-            </a>
-          {% endif %}
+          <a class="btn btn-primary" href="{{ next_url }}">
+            {{ next_button_label }}
+          </a>
         </div>
       </div>
     </div>

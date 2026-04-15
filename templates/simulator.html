@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h1 class="h2 mb-3">{{ simulator["page"]["title"] }}</h1>
+        <p>{{ simulator["page"]["description"] }}</p>
+
+        {% if error_message %}
+          <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+          </div>
+        {% endif %}
+
+        <form method="post" class="row g-3">
+          {% for ingredient in simulator["ingredients"] %}
+            <div class="col-md-6">
+              <label class="form-label" for="{{ ingredient["key"] }}">{{ ingredient["label"] }}</label>
+              <select class="form-select" id="{{ ingredient["key"] }}" name="{{ ingredient["key"] }}">
+                {% for level in simulator["levels"] %}
+                  <option value="{{ level }}" {% if selections[ingredient["key"]] == level %}selected{% endif %}>
+                    {{ level|title }}
+                  </option>
+                {% endfor %}
+              </select>
+              <div class="form-text">{{ ingredient["description"] }}</div>
+            </div>
+          {% endfor %}
+
+          <div class="col-12 d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="{{ url_for('learn_step', step=7) }}">
+              {{ simulator["page"]["back_button_label"] }}
+            </a>
+            <button type="submit" class="btn btn-primary">
+              {{ simulator["page"]["bake_button_label"] }}
+            </button>
+            {% if result %}
+              <a class="btn btn-outline-primary" href="{{ url_for('quiz_step', step=1) }}">
+                {{ simulator["page"]["next_button_label"] }}
+              </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if result %}
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h4 mb-3">Baking Result</h2>
+          <p class="fs-5 mb-2">{{ result["cookie_type"] }}</p>
+          <p class="mb-0">{{ result["explanation"] }}</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
