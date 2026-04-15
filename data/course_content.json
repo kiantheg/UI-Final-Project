@@ -1,0 +1,93 @@
+{
+  "home": {
+    "title": "Cookieria Simulator",
+    "description": "Learn how ingredient changes affect a chocolate chip cookie before moving into the later simulator and quiz flow.",
+    "start_button_label": "Start"
+  },
+  "learning_steps": [
+    {
+      "step": 1,
+      "title": "Intro and Goal",
+      "body": [
+        "Your goal is to create each cookie type by adjusting ingredients.",
+        "This learning flow gives the player the ingredient knowledge they will use later in the simulator."
+      ],
+      "list_title": "Cookie Types",
+      "items": [
+        "Flat",
+        "Chewy",
+        "Thick",
+        "Crispy"
+      ],
+      "next_button_label": "View Ingredients"
+    },
+    {
+      "step": 2,
+      "title": "Ingredient Overview",
+      "body": [
+        "These four ingredients are the main variables for the cookie outcomes in this prototype."
+      ],
+      "list_title": "Key Ingredients",
+      "items": [
+        "Butter",
+        "Flour",
+        "White Sugar",
+        "Brown Sugar"
+      ],
+      "next_button_label": "Learn About Butter"
+    },
+    {
+      "step": 3,
+      "title": "Butter",
+      "body": [
+        "Butter controls how much a cookie spreads during baking."
+      ],
+      "highlight": "More butter leads to flatter cookies.",
+      "next_button_label": "Learn About Flour"
+    },
+    {
+      "step": 4,
+      "title": "Flour",
+      "body": [
+        "Flour adds structure and helps a cookie hold its shape."
+      ],
+      "highlight": "More flour leads to thicker cookies.",
+      "next_button_label": "Learn About White Sugar"
+    },
+    {
+      "step": 5,
+      "title": "White Sugar",
+      "body": [
+        "White sugar increases spread and helps create a crisper texture."
+      ],
+      "highlight": "More white sugar makes cookies crispier and flatter.",
+      "next_button_label": "Learn About Brown Sugar"
+    },
+    {
+      "step": 6,
+      "title": "Brown Sugar",
+      "body": [
+        "Brown sugar adds moisture to the dough and changes the texture."
+      ],
+      "highlight": "More brown sugar makes cookies softer and chewier.",
+      "next_button_label": "Continue to the Transition Page"
+    },
+    {
+      "step": 7,
+      "title": "Ready to Simulate",
+      "body": [
+        "You are ready to use what you learned in the simulator and quiz flow.",
+        "The next route is only a placeholder for now, but the navigation path is in place for testing."
+      ],
+      "next_button_label": "Go to Quiz Placeholder"
+    }
+  ],
+  "quiz_placeholder": {
+    "title": "Quiz Placeholder",
+    "message": "This route exists so the app is clickable through the major states now. Quiz questions and answer storage can be added here later without changing the learning flow."
+  },
+  "results_page": {
+    "title": "Results Placeholder",
+    "description": "This page shows the activity currently stored by the backend."
+  }
+}
