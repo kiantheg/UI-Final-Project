@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h1 class="h2 mb-3">{{ page.title }}</h1>
+        <p>{{ page.description }}</p>
+
+        <dl class="row">
+          <dt class="col-sm-4">Started</dt>
+          <dd class="col-sm-8">{{ state.started }}</dd>
+
+          <dt class="col-sm-4">Started at</dt>
+          <dd class="col-sm-8">{{ state.started_at or "Not started yet" }}</dd>
+
+          <dt class="col-sm-4">Learning steps visited</dt>
+          <dd class="col-sm-8">{{ state.learning_steps_visited|join(", ") or "None" }}</dd>
+
+          <dt class="col-sm-4">Simulator visits</dt>
+          <dd class="col-sm-8">{{ state.simulator_visits }}</dd>
+
+          <dt class="col-sm-4">Simulator runs</dt>
+          <dd class="col-sm-8">{{ state.simulator_runs|length }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h4 mb-3">Stored Activity Log</h2>
+        <pre class="bg-light border rounded p-3 mb-0"><code>{{ state | tojson(indent=2) }}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
