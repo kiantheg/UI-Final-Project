@@ -2,23 +2,42 @@
 
 {% block content %}
 <section class="row justify-content-center">
+
   <div class="col-lg-8">
-    <div class="card shadow-sm">
+
+    <div class="card shadow-sm rounded-4">
+
       <div class="card-body p-4">
-        <h1 class="h2 mb-3">{{ page_title }}</h1>
+
+        <h1 class="h2 mb-3">
+          {{ page_title }}
+        </h1>
+
         <p>{{ message }}</p>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 mt-4">
+
           {% if back_url %}
-            <a class="btn btn-outline-secondary" href="{{ back_url }}">Back</a>
+            <a class="btn btn-outline-secondary"
+               href="{{ back_url }}">
+              Back
+            </a>
           {% endif %}
 
           {% if next_url %}
-            <a class="btn btn-primary" href="{{ next_url }}">{{ next_label }}</a>
+            <a class="btn cookie-btn"
+               href="{{ next_url }}">
+              {{ next_label }}
+            </a>
           {% endif %}
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 {% endblock %}
