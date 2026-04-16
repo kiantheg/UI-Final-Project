@@ -1,0 +1,87 @@
+/* 🍪 COOKIE THEME */
+body {
+  background-color: #e0c7a5;
+  font-family: Arial, sans-serif;
+}
+
+/* 🍪 HERO HOME CARD */
+.cookie-hero {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* 🍪 MAIN BUTTON */
+.cookie-btn {
+  background-color: #8b5a2b;
+  color: white;
+  border: none;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.cookie-btn:hover {
+  background-color: #6f431f;
+  transform: scale(1.03);
+  color: white;
+}
+
+/* 🍪 MEDIA PLACEHOLDER */
+.media-placeholder {
+  background: #fff;
+  border: 2px dashed #c9a27a;
+  padding: 40px;
+  border-radius: 12px;
+}
+
+/* 🧱 CARDS */
+.card {
+  border-radius: 16px;
+  border: none;
+}
+
+/* 🧭 NAVBAR */
+.navbar {
+  padding: 12px 0;
+}
+
+/* 🧭 NAVBAR BACKGROUND (light brown) */
+/* 🧭 NAVBAR */
+.navbar {
+  background-color: #bd9258 !important;
+  padding: 20px 0;   /* thicker navbar */
+}
+
+/* 🧭 NAV LINK BUTTON STYLE */
+.navbar .nav-link {
+  background-color: #5f3d1d;
+  color: white !important;
+  font-weight: 600;
+  font-size: 1.5rem;   /* bigger text */
+  border-radius: 10px;
+  padding: 10px 18px;   /* bigger button box */
+  transition: all 0.2s ease;
+}
+
+/* 🧭 NAV LINK HOVER EFFECT */
+.navbar .nav-link:hover {
+  background-color: #6f431f;
+  transform: translateY(-2px);
+  color: white !important;
+}
+
+
+/* 🍪 BRAND TITLE */
+.navbar-brand {
+  font-size: 2.2rem;
+  font-weight: 1000;
+  color: #6f431f !important;
+}
+
+
+.alert-secondary {
+  background-color: #ffffff !important;
+  border: 2px solid #d6b38a;
+  color: #4b2e1a;
+  border-radius: 12px;
+  padding: 16px;
+}

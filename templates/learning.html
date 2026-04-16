@@ -2,18 +2,29 @@
 
 {% block content %}
 <section class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <p class="text-muted mb-2">Learning step {{ step_data["step"] }} of {{ total_steps }}</p>
-        <h1 class="h2 mb-3">{{ step_data["title"] }}</h1>
+
+  <div class="col-lg-10 col-xl-9">
+
+    <div class="cookie-hero rounded-4 shadow-sm">
+
+      <div class="p-5">
+
+        <p class="text-muted mb-2">
+          Learning step {{ step_data["step"] }} of {{ total_steps }}
+        </p>
+
+        <h1 class="h2 mb-3">
+          {{ step_data["title"] }}
+        </h1>
 
         {% for paragraph in step_data["body"] %}
           <p>{{ paragraph }}</p>
         {% endfor %}
 
         {% if step_data.get("list_title") %}
-          <h2 class="h5 mt-4">{{ step_data["list_title"] }}</h2>
+          <h2 class="h5 mt-4">
+            {{ step_data["list_title"] }}
+          </h2>
         {% endif %}
 
         {% if step_data.get("items") %}
@@ -25,24 +36,33 @@
         {% endif %}
 
         {% if step_data.get("highlight") %}
-          <div class="alert alert-secondary" role="alert">
+          <div class="alert alert-secondary">
             {{ step_data["highlight"] }}
           </div>
         {% endif %}
 
-        <div class="d-flex gap-2">
+        <!-- NAV BUTTONS -->
+        <div class="d-flex gap-2 mt-4">
+
           {% if previous_step %}
-            <a class="btn btn-outline-secondary" href="{{ url_for('learn_step', step=previous_step) }}">
+            <a class="btn btn-outline-secondary"
+               href="{{ url_for('learn_step', step=previous_step) }}">
               Back
             </a>
           {% endif %}
 
-          <a class="btn btn-primary" href="{{ next_url }}">
+          <a class="btn cookie-btn"
+             href="{{ next_url }}">
             {{ next_button_label }}
           </a>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 {% endblock %}

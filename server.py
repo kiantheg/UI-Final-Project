@@ -71,3 +71,55 @@ def get_quiz_question(question_id):
         if question["id"] == question_id:
             return question
     return None
+
+
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+
+# -------------------
+# HOME ROUTE
+# -------------------
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+# -------------------
+# LEARNING ROUTE
+# -------------------
+@app.route("/learn/<int:step>")
+def learn_step(step):
+    return render_template("learning.html", step=step)
+
+
+# -------------------
+# SIMULATOR ROUTE
+# -------------------
+@app.route("/simulator")
+def simulator():
+    return render_template("simulator.html")
+
+
+# -------------------
+# QUIZ ROUTE
+# -------------------
+@app.route("/quiz/<int:step>")
+def quiz_step(step):
+    return render_template("placeholder.html", step=step)
+
+
+# -------------------
+# RESULTS ROUTE
+# -------------------
+@app.route("/results")
+def results():
+    return render_template("results.html")
+
+
+# -------------------
+# RUN APP
+# -------------------
+if __name__ == "__main__":
+    app.run(debug=True)
