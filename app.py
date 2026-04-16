@@ -8,6 +8,7 @@ from flask import Flask, abort, redirect, render_template, request, url_for
 BASE_DIR = Path(__file__).resolve().parent
 CONTENT_FILE = BASE_DIR / "data" / "course_content.json"
 SIMULATOR_FILE = BASE_DIR / "data" / "simulator_content.json"
+QUIZ_FILE = BASE_DIR / "data" / "quiz_content.json"
 STATE_FILE = BASE_DIR / "instance" / "user_state.json"
 
 app = Flask(__name__)
@@ -26,6 +27,10 @@ def load_content():
 def load_simulator_content():
     """Load simulator definitions and recipe rules from structured data."""
     return load_json_file(SIMULATOR_FILE)
+
+def load_quiz_content():
+    """Load quiz questions and end-page content from structured data."""
+    return load_json_file(QUIZ_FILE)
 
 
 def timestamp():
@@ -115,6 +120,53 @@ def record_quiz_visit(step):
     append_action(state, "quiz_step_visited", step=step)
     save_state(state)
 
+def check_quiz_answer(question, form_data):
+    if question["type"] == "ingredient":
+        butter = form_data.get("butter")
+        flour = form_data.get("flour")
+        sugar = form_data.get("sugar")
+
+        return (
+            butter == question["correct_answer"]["butter"]
+            and flour == question["correct_answer"]["flour"]
+            and sugar == question["correct_answer"]["sugar"]
+        ), {
+            "butter": butter,
+            "flour": flour,
+            "sugar": sugar,
+        }
+
+    if question["type"] == "multiple_choice":
+        answer = form_data.get("answer")
+        return answer == question["correct_answer"], {
+            "answer": answer,
+        }
+
+    return False, {}
+
+
+def record_quiz_answer(step, question, user_response, is_correct):
+    state = load_state()
+    state["quiz_answers"] = [entry for entry in state["quiz_answers"] if entry["step"] != step]
+
+    state["quiz_answers"].append(
+        {
+            "step": step,
+            "question_type": question["type"],
+            "response": user_response,
+            "correct": is_correct,
+            "timestamp": timestamp(),
+        }
+    )
+
+    append_action(
+        state,
+        "quiz_answer_submitted",
+        step=step,
+        correct=is_correct,
+    )
+    save_state(state)
+
 
 def record_simulator_entry():
     state = load_state()
@@ -146,6 +198,12 @@ def get_learning_step(learning_steps, step_number):
     for step in learning_steps:
         if step["step"] == step_number:
             return step
+    return None
+
+def get_quiz_question(quiz_questions, step_number):
+    for question in quiz_questions:
+        if question["id"] == step_number:
+            return question
     return None
 
 
@@ -288,28 +346,50 @@ def simulator():
     )
 
 
-@app.route("/quiz/<int:step>")
+@app.route("/quiz/<int:step>", methods=["GET", "POST"])
 def quiz_step(step):
-    content = load_content()
-    record_quiz_visit(step)
+    quiz_content = load_quiz_content()
+    quiz_questions = quiz_content["quiz_questions"]
+    question = get_quiz_question(quiz_questions, step)
+
+    if question is None:
+        return redirect(url_for("results"))
+
+    if request.method == "GET":
+        record_quiz_visit(step)
+        return render_template("quiz_test.html", question=question)
+
+    is_correct, user_response = check_quiz_answer(question, request.form)
+    record_quiz_answer(step, question, user_response, is_correct)
+
+    next_step = step + 1
+    is_last = step == len(quiz_questions)
+
     return render_template(
-        "placeholder.html",
-        page_title=content["quiz_placeholder"]["title"],
-        message=content["quiz_placeholder"]["message"],
-        back_url=url_for("simulator"),
-        next_url=url_for("results"),
-        next_label="View Results Placeholder",
+        "feedback_test.html",
+        question=question,
+        is_correct=is_correct,
+        next_step=next_step,
+        is_last=is_last,
     )
 
 
 @app.route("/results")
 def results():
     content = load_content()
+    quiz_content = load_quiz_content()
     state = load_state()
+
+    total_questions = len(quiz_content["quiz_questions"])
+    correct_answers = sum(1 for answer in state["quiz_answers"] if answer["correct"])
+
     return render_template(
         "results.html",
         page=content["results_page"],
         state=state,
+        quiz_end_page=quiz_content["quiz_end_page"],
+        quiz_score=correct_answers,
+        total_questions=total_questions,
     )
 
 

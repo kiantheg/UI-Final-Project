@@ -1,0 +1,59 @@
+{
+  "quiz_questions": [
+    {
+      "id": 1,
+      "type": "ingredient",
+      "goal": "CRISPY & FLAT COOKIE",
+      "hint": "Think about butter and flour. Which sugar has lower moisture?",
+      "correct_answer": {
+        "butter": "high",
+        "flour": "low",
+        "sugar": "white"
+      },
+      "feedback_text": "Correct! High butter increases spreading. White sugar creates a crisp texture. Low flour keeps the cookie thin and flat."
+    },
+    {
+      "id": 2,
+      "type": "ingredient",
+      "goal": "CHEWY & THICK COOKIE",
+      "hint": "Use ingredients that reduce spreading and add moisture.",
+      "correct_answer": {
+        "butter": "low",
+        "flour": "high",
+        "sugar": "brown"
+      },
+      "feedback_text": "Correct! Brown sugar adds moisture and chewiness. More flour gives the cookie structure. Less butter reduces spreading."
+    },
+    {
+      "id": 3,
+      "type": "multiple_choice",
+      "prompt": "Oh no! My cookies came out too soft :(, but I wanted them crispier. What should I change?",
+      "choices": [
+        "Use brown sugar",
+        "Use white sugar",
+        "Increase flour",
+        "Reduce butter"
+      ],
+      "correct_answer": "Use white sugar",
+      "feedback_text": "Correct! Yay you saved my cookies!"
+    },
+    {
+      "id": 4,
+      "type": "multiple_choice",
+      "prompt": "Oh no! My cookies spread too much and came out flat. I wanted them thick and chewy. What should I change?",
+      "choices": [
+        "Add more flour and use brown sugar",
+        "Increase butter and use white sugar",
+        "Reduce flour and increase butter",
+        "Use white sugar and reduce flour"
+      ],
+      "correct_answer": "Add more flour and use brown sugar",
+      "feedback_text": "Correct! I am so grateful for you, have a cookie please :)"
+    }
+  ],
+  "quiz_end_page": {
+    "title": "COMPLETE",
+    "message": "HAVE A COOKIE & A GOOD DAY!",
+    "button_text": "RESTART"
+  }
+}

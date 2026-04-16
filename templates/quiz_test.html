@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Test</title>
+</head>
+<body>
+    <h1>Cookie Quiz Test</h1>
+
+    {% if question.type == "ingredient" %}
+        <h2>Goal: {{ question.goal }}</h2>
+        <p>{{ question.hint }}</p>
+
+        <form method="POST">
+            <label>Butter:</label>
+            <select name="butter" required>
+                <option value="">Select</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+
+            <br><br>
+
+            <label>Flour:</label>
+            <select name="flour" required>
+                <option value="">Select</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+
+            <br><br>
+
+            <label>Sugar:</label>
+            <select name="sugar" required>
+                <option value="">Select</option>
+                <option value="white">White Sugar</option>
+                <option value="brown">Brown Sugar</option>
+            </select>
+
+            <br><br>
+
+            <button type="submit">Bake</button>
+        </form>
+    {% else %}
+        <h2>{{ question.prompt }}</h2>
+
+        <form method="POST">
+            {% for choice in question.choices %}
+                <input type="radio" name="answer" value="{{ choice }}" required>
+                <label>{{ choice }}</label>
+                <br>
+            {% endfor %}
+
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+    {% endif %}
+</body>
+</html>

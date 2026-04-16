@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result Test</title>
+</head>
+<body>
+    <h1>{{ end_page.title }}</h1>
+    <h2>{{ end_page.message }}</h2>
+    <p>Your score: {{ score }}/{{ total }}</p>
+
+    <a href="{{ url_for('home') }}">
+        <button>{{ end_page.button_text }}</button>
+    </a>
+</body>
+</html>
