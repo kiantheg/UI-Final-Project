@@ -168,6 +168,13 @@ def record_quiz_answer(step, question, user_response, is_correct):
     save_state(state)
 
 
+def reset_quiz_progress():
+    state = load_state()
+    state["quiz_answers"] = []
+    append_action(state, "quiz_restarted")
+    save_state(state)
+
+
 def record_simulator_entry():
     state = load_state()
     state["simulator_visits"] += 1
@@ -192,6 +199,55 @@ def record_simulator_run(selections, result):
         cookie_type=result["cookie_type"],
     )
     save_state(state)
+
+
+def get_quiz_progress(quiz_questions, state):
+    answered_steps = sorted(
+        {
+            entry["step"]
+            for entry in state.get("quiz_answers", [])
+            if get_quiz_question(quiz_questions, entry.get("step")) is not None
+        }
+    )
+    total_questions = len(quiz_questions)
+    completed = len(answered_steps) >= total_questions
+    next_step = None
+
+    for question in quiz_questions:
+        if question["id"] not in answered_steps:
+            next_step = question["id"]
+            break
+
+    return {
+        "answered_steps": answered_steps,
+        "completed": completed,
+        "next_step": next_step,
+    }
+
+
+def get_quiz_response_for_step(state, step):
+    for entry in state.get("quiz_answers", []):
+        if entry.get("step") == step:
+            return entry
+    return None
+
+
+def summarize_level_usage(state):
+    counts = {"low": 0, "medium": 0, "high": 0}
+
+    for run in state.get("simulator_runs", []):
+        for level in run.get("ingredients", {}).values():
+            if level in counts:
+                counts[level] += 1
+
+    most_used_level = max(counts, key=counts.get)
+    if counts[most_used_level] == 0:
+        return {"label": "Most-used ingredient level", "value": "No simulator attempts yet"}
+
+    return {
+        "label": "Most-used ingredient level",
+        "value": f"{most_used_level.title()} ({counts[most_used_level]} selections)",
+    }
 
 
 def get_learning_step(learning_steps, step_number):
@@ -304,7 +360,7 @@ def learn_step(step):
     next_button_label = (
         step_data.get("next_button_label", "Continue")
         if next_step
-        else "Go to Simulator"
+        else step_data.get("next_button_label", "Continue to Simulator")
     )
 
     return render_template(
@@ -351,13 +407,31 @@ def quiz_step(step):
     quiz_content = load_quiz_content()
     quiz_questions = quiz_content["quiz_questions"]
     question = get_quiz_question(quiz_questions, step)
+    state = load_state()
+    progress = get_quiz_progress(quiz_questions, state)
+    review_mode = progress["completed"]
+    saved_response = get_quiz_response_for_step(state, step)
 
     if question is None:
         return redirect(url_for("results"))
 
+    if not review_mode and step != progress["next_step"]:
+        return redirect(url_for("quiz_step", step=progress["next_step"]))
+
     if request.method == "GET":
         record_quiz_visit(step)
-        return render_template("quiz_test.html", question=question)
+        return render_template(
+            "quiz_test.html",
+            question=question,
+            review_mode=review_mode,
+            saved_response=saved_response["response"] if saved_response else {},
+            saved_correct=saved_response["correct"] if saved_response else None,
+            review_index=step,
+            total_questions=len(quiz_questions),
+        )
+
+    if review_mode:
+        return redirect(url_for("quiz_step", step=step))
 
     is_correct, user_response = check_quiz_answer(question, request.form)
     record_quiz_answer(step, question, user_response, is_correct)
@@ -374,6 +448,12 @@ def quiz_step(step):
     )
 
 
+@app.route("/quiz/restart", methods=["POST"])
+def restart_quiz():
+    reset_quiz_progress()
+    return redirect(url_for("quiz_step", step=1))
+
+
 @app.route("/results")
 def results():
     content = load_content()
@@ -382,6 +462,8 @@ def results():
 
     total_questions = len(quiz_content["quiz_questions"])
     correct_answers = sum(1 for answer in state["quiz_answers"] if answer["correct"])
+    quiz_percent = round((correct_answers / total_questions) * 100) if total_questions else 0
+    usage_stat = summarize_level_usage(state)
 
     return render_template(
         "results.html",
@@ -389,7 +471,10 @@ def results():
         state=state,
         quiz_end_page=quiz_content["quiz_end_page"],
         quiz_score=correct_answers,
+        quiz_percent=quiz_percent,
         total_questions=total_questions,
+        quiz_questions=quiz_content["quiz_questions"],
+        usage_stat=usage_stat,
     )
 
 

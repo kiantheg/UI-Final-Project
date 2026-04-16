@@ -4,7 +4,7 @@
     "description": "Adjust the ingredient levels, click Bake, and see what kind of cookie you created.",
     "bake_button_label": "Bake",
     "back_button_label": "Back to Learning",
-    "next_button_label": "Continue to Quiz Placeholder"
+    "next_button_label": "Continue to Quiz"
   },
   "levels": [
     "low",

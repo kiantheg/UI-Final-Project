@@ -1,25 +1,74 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Feedback Test</title>
-</head>
-<body>
-    {% if is_correct %}
-        <h1>{{ question.feedback_title }}</h1>
-    {% else %}
-        <h1>Not quite.</h1>
-    {% endif %}
+{% extends "base.html" %}
 
-    <p>{{ question.feedback_text }}</p>
+{% block content %}
+<section class="page-shell">
+  <div class="feedback-layout">
+    <div class="surface-card surface-card--accent">
+      <div class="eyebrow">quiz feedback</div>
+      <div class="mb-3">
+        {% if is_correct %}
+          <span class="feedback-badge feedback-badge--correct">Nice bake</span>
+        {% else %}
+          <span class="feedback-badge feedback-badge--retry">Try again mindset</span>
+        {% endif %}
+      </div>
 
-    {% if is_last %}
-        <a href="{{ url_for('results') }}">
-            <button>Finish</button>
-        </a>
-    {% else %}
-        <a href="{{ url_for('quiz_step', step=next_step) }}">
-            <button>Next</button>
-        </a>
-    {% endif %}
-</body>
-</html>
+      <h1 class="section-title">
+        {% if is_correct %}
+          {{ question.feedback_title or "Correct!" }}
+        {% else %}
+          Not quite yet
+        {% endif %}
+      </h1>
+
+      <p>
+        {% if is_correct %}
+          {{ question.feedback_text }}
+        {% else %}
+          Review the clue and compare it with the ingredient rules from the lesson. The next screen keeps the same guided flow moving forward.
+        {% endif %}
+      </p>
+
+      <div class="button-row mt-4">
+        {% if is_last %}
+          <a class="cookie-btn" href="{{ url_for('results') }}">Finish</a>
+        {% else %}
+          <a class="cookie-btn" href="{{ url_for('quiz_step', step=next_step) }}">Next Question</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="surface-card">
+      <div class="eyebrow">lesson recap</div>
+
+      {% if question.type == "ingredient" %}
+        <h2 class="section-title">{{ question.goal }}</h2>
+        <p class="muted-copy">This target cookie depends on the right balance of spread, structure, and sugar type.</p>
+
+        <div class="recap-grid mt-3">
+          <div class="recap-card">
+            <div class="recap-card__kicker">Butter</div>
+            <p class="recap-card__title">{{ question.correct_answer.butter|title }}</p>
+          </div>
+          <div class="recap-card">
+            <div class="recap-card__kicker">Flour</div>
+            <p class="recap-card__title">{{ question.correct_answer.flour|title }}</p>
+          </div>
+          <div class="recap-card">
+            <div class="recap-card__kicker">Sugar</div>
+            <p class="recap-card__title">{{ question.correct_answer.sugar|title }} sugar</p>
+          </div>
+        </div>
+      {% else %}
+        <h2 class="section-title">Best adjustment</h2>
+        <p>{{ question.correct_answer }}</p>
+
+        <div class="helper-panel mt-3">
+          <strong>Why this matters</strong>
+          The recovery questions check whether you can diagnose a bad bake and connect it back to the ingredient rules you learned earlier.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
