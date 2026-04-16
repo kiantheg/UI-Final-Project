@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback Test</title>
+</head>
+<body>
+    {% if is_correct %}
+        <h1>{{ question.feedback_title }}</h1>
+    {% else %}
+        <h1>Not quite.</h1>
+    {% endif %}
+
+    <p>{{ question.feedback_text }}</p>
+
+    {% if is_last %}
+        <a href="{{ url_for('results') }}">
+            <button>Finish</button>
+        </a>
+    {% else %}
+        <a href="{{ url_for('quiz_step', step=next_step) }}">
+            <button>Next</button>
+        </a>
+    {% endif %}
+</body>
+</html>
