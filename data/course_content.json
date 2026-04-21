@@ -70,24 +70,25 @@
         "Brown sugar adds moisture to the dough and changes the texture."
       ],
       "highlight": "More brown sugar makes cookies softer and chewier.",
-      "next_button_label": "Continue to the Transition Page"
+      "next_button_label": "Continue to Conclusion"
     },
     {
       "step": 7,
       "title": "Ready to Simulate",
       "body": [
-        "You are ready to use what you learned in the simulator and quiz flow.",
-        "The next route is only a placeholder for now, but the navigation path is in place for testing."
+        "You have finished the lesson portion and now know how butter, flour, and sugars change a cookie's texture.",
+        "Next, you will move into the simulator to test those ideas by adjusting ingredients and baking different cookie outcomes.",
+        "After the simulator, you will continue into the quiz to show what you learned."
       ],
-      "next_button_label": "Go to Quiz Placeholder"
+      "next_button_label": "Continue to Simulator"
     }
   ],
   "quiz_placeholder": {
-    "title": "Quiz Placeholder",
-    "message": "This route exists so the app is clickable through the major states now. Quiz questions and answer storage can be added here later without changing the learning flow."
+    "title": "Quiz",
+    "message": "Use what you learned in the lesson and simulator to answer each cookie question."
   },
   "results_page": {
-    "title": "Results Placeholder",
-    "description": "This page shows the activity currently stored by the backend."
+    "title": "Quiz Results",
+    "description": "Here is a quick summary of how you did and how you used the app."
   }
 }

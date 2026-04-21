@@ -1,68 +1,124 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="row justify-content-center">
+<section class="page-shell">
+  <div class="lesson-layout">
+    <aside class="lesson-sidebar">
+      <div class="surface-card progress-card">
+        <div class="eyebrow">learning flow</div>
+        <div>
+          <h1 class="section-title">Step {{ step_data["step"] }}</h1>
+          <p class="muted-copy mb-0">Follow the lesson in order so the simulator and quiz feel easier to solve.</p>
+        </div>
 
-  <div class="col-lg-10 col-xl-9">
+        <div class="progress-meter">
+          <span style="width: {{ (step_data['step'] / total_steps) * 100 }}%"></span>
+        </div>
 
-    <div class="cookie-hero rounded-4 shadow-sm">
+        <div class="progress-strip">
+          <span class="progress-pill">{{ step_data["step"] }} of {{ total_steps }}</span>
+          {% if step_data["step"] <= 2 %}
+            <span class="progress-pill">Mission setup</span>
+          {% elif step_data["step"] <= 6 %}
+            <span class="progress-pill">Ingredient focus</span>
+          {% else %}
+            <span class="progress-pill">Ready to play</span>
+          {% endif %}
+        </div>
+      </div>
 
-      <div class="p-5">
+      {% if step_data["step"] == 1 %}
+        <div class="surface-card surface-card--tight">
+          <strong class="d-block mb-2">Goal preview</strong>
+          <p class="mb-0">You are learning how ingredient choices shape the cookie so you can intentionally bake each target style later.</p>
+        </div>
+      {% elif step_data["step"] == 2 %}
+        <div class="surface-card surface-card--tight">
+          <strong class="d-block mb-2">Ingredient map</strong>
+          <p class="mb-0">Keep an eye on spread, structure, crispiness, and moisture. Those four ideas drive the whole interaction flow.</p>
+        </div>
+      {% elif step_data["step"] == 7 %}
+        <div class="surface-card surface-card--tight">
+          <strong class="d-block mb-2">Next section</strong>
+          <p class="mb-0">The simulator tests your ingredient instincts first. The quiz then checks whether you can apply those rules quickly.</p>
+        </div>
+      {% else %}
+        <div class="surface-card surface-card--tight">
+          <strong class="d-block mb-2">Remember this rule</strong>
+          <p class="mb-0">{{ step_data.get("highlight", "This ingredient changes cookie structure and texture.") }}</p>
+        </div>
+      {% endif %}
+    </aside>
 
-        <p class="text-muted mb-2">
-          Learning step {{ step_data["step"] }} of {{ total_steps }}
-        </p>
-
-        <h1 class="h2 mb-3">
-          {{ step_data["title"] }}
-        </h1>
+    <div class="lesson-main">
+      <div class="surface-card surface-card--accent">
+        <div class="eyebrow">guided lesson</div>
+        <h1 class="section-title">{{ step_data["title"] }}</h1>
 
         {% for paragraph in step_data["body"] %}
           <p>{{ paragraph }}</p>
         {% endfor %}
 
-        {% if step_data.get("list_title") %}
-          <h2 class="h5 mt-4">
-            {{ step_data["list_title"] }}
-          </h2>
-        {% endif %}
-
-        {% if step_data.get("items") %}
-          <ul class="list-group mb-4">
-            {% for item in step_data["items"] %}
-              <li class="list-group-item">{{ item }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-
-        {% if step_data.get("highlight") %}
-          <div class="alert alert-secondary">
-            {{ step_data["highlight"] }}
+        {% if step_data["step"] in [3, 4, 5, 6] %}
+          <div class="ingredient-spotlight mt-4">
+            <div class="ingredient-spotlight__icon">
+              {% if step_data["title"] == "Butter" %}🧈{% elif step_data["title"] == "Flour" %}🌾{% elif step_data["title"] == "White Sugar" %}🍬{% else %}🍯{% endif %}
+            </div>
+            <div class="ingredient-spotlight__copy">
+              <h2 class="section-title">{{ step_data["title"] }}</h2>
+              <p class="mb-0">
+                {% if step_data["title"] == "Butter" %}
+                  Controls spread during baking. More butter usually pushes the cookie outward and flatter.
+                {% elif step_data["title"] == "Flour" %}
+                  Gives the dough structure. More flour helps the cookie keep shape and bake thicker.
+                {% elif step_data["title"] == "White Sugar" %}
+                  Encourages spread and crispiness, making the bake feel lighter and snappier.
+                {% else %}
+                  Adds moisture and softness, which is why chewier cookies often rely on it.
+                {% endif %}
+              </p>
+            </div>
           </div>
         {% endif %}
 
-        <!-- NAV BUTTONS -->
-        <div class="d-flex gap-2 mt-4">
+        {% if step_data.get("list_title") %}
+          <div class="mt-4">
+            <p class="eyebrow mb-3">{{ step_data["list_title"] }}</p>
+            <div class="list-grid">
+              {% for item in step_data["items"] %}
+                <div class="list-card">
+                  <div class="list-card__kicker">
+                    {% if step_data["step"] == 1 %}cookie target{% else %}ingredient{% endif %}
+                  </div>
+                  <p class="list-card__title">{{ item }}</p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
 
+        {% if step_data.get("highlight") %}
+          <div class="fact-callout mt-4">
+            <strong>Key takeaway</strong>
+            {{ step_data["highlight"] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="surface-card surface-card--tight">
+        <div class="button-row">
           {% if previous_step %}
-            <a class="btn btn-outline-secondary"
-               href="{{ url_for('learn_step', step=previous_step) }}">
+            <a class="cookie-btn-secondary" href="{{ url_for('learn_step', step=previous_step) }}">
               Back
             </a>
           {% endif %}
 
-          <a class="btn cookie-btn"
-             href="{{ next_url }}">
+          <a class="cookie-btn" href="{{ next_url }}">
             {{ next_button_label }}
           </a>
-
         </div>
-
       </div>
-
     </div>
-
   </div>
-
 </section>
 {% endblock %}

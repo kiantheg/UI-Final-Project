@@ -1,45 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body p-4">
-        <h1 class="h2 mb-3">{{ page.title }}</h1>
-        <p>{{ page.description }}</p>
+<section class="page-shell">
+  <div class="surface-card surface-card--accent">
+    <div class="score-summary">
+      <div class="score-ring" style="--score-progress: {{ quiz_percent }};">
+        <svg class="score-ring__svg" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="score-ring__track" cx="60" cy="60" r="48"></circle>
+          <circle class="score-ring__progress" cx="60" cy="60" r="48"></circle>
+        </svg>
+        <div class="score-ring__value">
+          <strong>{{ quiz_percent }}%</strong>
+          <span>{{ quiz_score }} / {{ total_questions }}</span>
+        </div>
+      </div>
 
-        <dl class="row">
-          <dt class="col-sm-4">Started</dt>
-          <dd class="col-sm-8">{{ state.started }}</dd>
-
-          <dt class="col-sm-4">Started at</dt>
-          <dd class="col-sm-8">{{ state.started_at or "Not started yet" }}</dd>
-
-          <dt class="col-sm-4">Learning steps visited</dt>
-          <dd class="col-sm-8">{{ state.learning_steps_visited|join(", ") or "None" }}</dd>
-
-          <dt class="col-sm-4">Simulator visits</dt>
-          <dd class="col-sm-8">{{ state.simulator_visits }}</dd>
-
-          <dt class="col-sm-4">Simulator runs</dt>
-          <dd class="col-sm-8">{{ state.simulator_runs|length }}</dd>
-        </dl>
-        <hr>
-        <h3 class="mt-4">Quiz Results</h3>
-
-        <p><strong>{{ quiz_end_page.title }}</strong></p>
-        <p>{{ quiz_end_page.message }}</p>
-
-        <p>Score: {{ quiz_score }} / {{ total_questions }}</p>
-
+      <div>
+        <div class="eyebrow">final results</div>
+        <h1 class="section-title mb-2">{{ page.title }}</h1>
+        <p class="mb-2">{{ quiz_end_page.message }}</p>
+        <p class="muted-copy mb-1">{{ page.description }}</p>
+        <p class="mb-3">
+          {% if quiz_percent >= 75 %}
+            Strong job. You applied the ingredient rules well and carried them through the quiz.
+          {% elif quiz_percent >= 50 %}
+            Nice progress. You understand the main ideas and can sharpen a few details with another try.
+          {% else %}
+            You have the core lesson in place. One more simulator round and quiz attempt should help the rules stick.
+          {% endif %}
+        </p>
+        <div class="button-row">
+          <a class="cookie-btn" href="{{ url_for('home') }}">{{ quiz_end_page.button_text }}</a>
+          <form method="post" action="{{ url_for('restart_quiz') }}">
+            <button type="submit" class="cookie-btn-secondary">Retake Quiz</button>
+          </form>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h2 class="h4 mb-3">Stored Activity Log</h2>
-        <pre class="bg-light border rounded p-3 mb-0"><code>{{ state | tojson(indent=2) }}</code></pre>
-      </div>
+  <div class="results-grid">
+    <div class="stat-card">
+      <div class="stat-card__kicker">Quiz score</div>
+      <p class="stat-card__value">{{ quiz_score }} correct answers</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__kicker">Quiz percentage</div>
+      <p class="stat-card__value">{{ quiz_percent }}%</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__kicker">Simulator bakes</div>
+      <p class="stat-card__value">{{ state.simulator_runs|length }} attempts</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__kicker">{{ usage_stat.label }}</div>
+      <p class="stat-card__value">{{ usage_stat.value }}</p>
+    </div>
+  </div>
+
+  <div class="surface-card">
+    <div class="eyebrow">review questions</div>
+    <div class="button-row">
+      {% for question in quiz_questions %}
+        <a class="cookie-btn-ghost" href="{{ url_for('quiz_step', step=question.id) }}">Question {{ question.id }}</a>
+      {% endfor %}
     </div>
   </div>
 </section>
