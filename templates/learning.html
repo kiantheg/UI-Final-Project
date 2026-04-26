@@ -11,12 +11,18 @@
 
   {% set ingredient_names = ["Butter", "Flour", "White Sugar", "Brown Sugar"] %}
   {% set ingredient_imgs = ["butter.png", "flour.png", "white sugar.png", "brown sugar.png"] %}
+  {% set ingredient_img_map = {
+    "Butter": "butter.png",
+    "Flour": "flour.png",
+    "White Sugar": "white sugar.png",
+    "Brown Sugar": "brown sugar.png"
+  } %}
 
   {% if step == 1 %}
 
     <div class="learn-goal-row">
       <div
-        class="learn-bubble learn-bubble-large learn-bubble--talking"
+        class="learn-bubble learn-bubble-large learn-bubble--plain learn-bubble--talking"
         data-typewriter="Your goal: Create each cookie type by adjusting ingredients."
       >
         Your goal: Create each cookie type by adjusting ingredients.
@@ -45,35 +51,48 @@
   {% elif step == 2 %}
 
     <div class="learn-two-column learn-two-column--intro">
-      <div class="ingredient-menu ingredient-menu--intro">
+      <div class="ingredient-menu ingredient-menu--intro" data-ingredient-menu>
         <div class="ingredient-menu-header">
           <h1 class="learn-title">Ingredients List</h1>
+          <p class="ingredient-menu-hint">Hover to read about each ingredient.</p>
         </div>
-        {% for name in ingredient_names %}
-          <div class="ingredient-menu-row">
+        {% for lesson in ingredient_lessons %}
+          <button
+            type="button"
+            class="ingredient-menu-row ingredient-menu-row--interactive"
+            data-ingredient-choice
+            data-ingredient-title="{{ lesson['title'] }}"
+            data-ingredient-image="{{ url_for('static', filename='images/' ~ ingredient_img_map[lesson['title']]) }}"
+            data-ingredient-body="{{ lesson['body']|join(' ') }}"
+            data-ingredient-highlight="{{ lesson.get('highlight', '') }}"
+            aria-pressed="false">
             <img
-              src="{{ url_for('static', filename='images/' ~ ingredient_imgs[loop.index0]) }}"
-              alt="{{ name }}"
+              src="{{ url_for('static', filename='images/' ~ ingredient_img_map[lesson['title']]) }}"
+              alt="{{ lesson['title'] }}"
               class="ingredient-icon"
             >
-            <span>{{ name }}</span>
-          </div>
+            <span>{{ lesson["title"] }}</span>
+          </button>
         {% endfor %}
       </div>
 
-      <div class="intro-helper-card">
-        <div
-          class="learn-bubble learn-bubble--talking intro-bubble"
-          data-typewriter="These are the main ingredients you’ll be working with. Let’s go over each one!"
-        >
-          These are the main ingredients you’ll be working with. Let’s go over each one!
+      <div class="ingredient-info-card ingredient-info-card--interactive">
+        <div class="ingredient-info-card__header">
+          <img
+            src=""
+            alt=""
+            class="ingredient-big-img"
+            data-ingredient-display-image
+            hidden
+          >
+
+          <h2 data-ingredient-display-title>Choose an Ingredient</h2>
         </div>
 
-        <img
-          src="{{ url_for('static', filename='images/2.png') }}"
-          alt="Cookie cat"
-          class="learn-cat learn-cat-small learn-cat-speaking"
-        >
+        <div class="ingredient-copy">
+          <p data-ingredient-display-body>Hover over an ingredient on the left to see what it does.</p>
+          <p class="ingredient-highlight" data-ingredient-display-highlight hidden></p>
+        </div>
       </div>
     </div>
 
@@ -127,7 +146,7 @@
       <div class="ready-content">
         <div class="ready-kicker">Next Up: Simulator</div>
         <div
-          class="learn-bubble final-bubble learn-bubble--talking"
+          class="learn-bubble final-bubble learn-bubble--plain learn-bubble--talking"
           data-typewriter="Now that you know each ingredient, let’s simulate what you learned. Are you ready?"
         >
           Now that you know each ingredient, let’s simulate what you learned.
@@ -142,10 +161,10 @@
         >
 
         <div class="ready-buttons">
-          <a href="{{ next_url }}" class="learn-next-btn">YES</a>
           <a href="{{ url_for('learn_step', step=1) }}" class="learn-secondary-btn">
             REVIEW AGAIN
           </a>
+          <a href="{{ next_url }}" class="learn-next-btn">YES</a>
         </div>
       </div>
     </div>
