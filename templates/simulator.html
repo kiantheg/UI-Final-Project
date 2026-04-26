@@ -1,87 +1,116 @@
 {% extends "base.html" %}
+{% block body_class %}simulator-page{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="simulator-layout">
-    <div class="surface-card surface-card--accent">
-      <div class="eyebrow">interactive bake test</div>
-      <h1 class="section-title">{{ simulator["page"]["title"] }}</h1>
-      <p>{{ simulator["page"]["description"] }}</p>
+<section class="learn-game simulator-game">
+  <div class="learn-stage simulator-stage">
+    <div class="learn-goal-row simulator-hero">
+      <div
+        class="learn-bubble learn-bubble-large learn-bubble--talking"
+        data-typewriter="Use what you learned to test ingredient combinations and bake a cookie texture."
+      >
+        Use what you learned to test ingredient combinations and bake a cookie texture.
+      </div>
 
-      {% if error_message %}
-        <div class="alert alert-danger mt-3" role="alert">
-          {{ error_message }}
+      <img
+        src="{{ url_for('static', filename='images/2.png') }}"
+        alt="Cookie cat"
+        class="learn-cat learn-cat-talking learn-cat-speaking"
+      >
+    </div>
+
+    <div class="learn-two-column simulator-two-column">
+      <form method="post" class="ingredient-menu simulator-panel">
+        <div class="ingredient-menu-header">
+          <h1 class="learn-title">{{ simulator["page"]["title"] }}</h1>
+          <p class="simulator-intro">Set ingredient levels and bake to test the cookie texture.</p>
         </div>
-      {% endif %}
 
-      <form method="post" class="mt-4">
-        <div class="control-grid">
+        {% if error_message %}
+          <div class="simulator-error" role="alert">{{ error_message }}</div>
+        {% endif %}
+
+        <div class="simulator-control-stack">
           {% for ingredient in simulator["ingredients"] %}
             {% set current_level = selections[ingredient["key"]] %}
             {% set current_index = simulator["levels"].index(current_level) %}
-            <div class="control-card slider-card">
-              <label class="field-label" for="{{ ingredient["key"] }}">{{ ingredient["label"] }}</label>
-              <div class="slider-header">
-                <span class="slider-value" data-slider-output-for="{{ ingredient["key"] }}">{{ current_level|title }}</span>
-                <span class="slider-scale">Low to High</span>
+            <div class="ingredient-menu-row simulator-control-row">
+              <div class="simulator-control-copy">
+                <label class="simulator-control-label" for="{{ ingredient["key"] }}">{{ ingredient["label"] }}</label>
+                <p>{{ ingredient["description"] }}</p>
               </div>
-              <input type="hidden" name="{{ ingredient["key"] }}" value="{{ current_level }}" data-slider-hidden-for="{{ ingredient["key"] }}">
-              <input
-                class="ingredient-slider"
-                id="{{ ingredient["key"] }}"
-                type="range"
-                min="0"
-                max="{{ simulator['levels']|length - 1 }}"
-                step="1"
-                value="{{ current_index }}"
-                data-level-slider
-                data-target="{{ ingredient['key'] }}"
-                data-levels='{{ simulator["levels"] | tojson }}'>
-              <div class="slider-labels" aria-hidden="true">
-                {% for level in simulator["levels"] %}
-                  <span class="{% if level == current_level %}is-active{% endif %}" data-slider-label-for="{{ ingredient["key"] }}" data-level="{{ level }}">{{ level|title }}</span>
-                {% endfor %}
+
+              <div class="simulator-control-input">
+                <div class="slider-header">
+                  <span class="slider-value" data-slider-output-for="{{ ingredient["key"] }}">{{ current_level|title }}</span>
+                  <span class="slider-scale">Low to High</span>
+                </div>
+                <input type="hidden" name="{{ ingredient["key"] }}" value="{{ current_level }}" data-slider-hidden-for="{{ ingredient["key"] }}">
+                <input
+                  class="ingredient-slider"
+                  id="{{ ingredient["key"] }}"
+                  type="range"
+                  min="0"
+                  max="{{ simulator['levels']|length - 1 }}"
+                  step="1"
+                  value="{{ current_index }}"
+                  data-level-slider
+                  data-target="{{ ingredient['key'] }}"
+                  data-levels='{{ simulator["levels"] | tojson }}'>
+                <div class="slider-labels" aria-hidden="true">
+                  {% for level in simulator["levels"] %}
+                    <span class="{% if level == current_level %}is-active{% endif %}" data-slider-label-for="{{ ingredient["key"] }}" data-level="{{ level }}">{{ level|title }}</span>
+                  {% endfor %}
+                </div>
               </div>
-              <div class="form-text mt-2">{{ ingredient["description"] }}</div>
             </div>
           {% endfor %}
         </div>
 
-        <div class="button-row mt-4">
-          <a class="cookie-btn-secondary" href="{{ url_for('learn_step', step=7) }}">
-            {{ simulator["page"]["back_button_label"] }}
+        <div class="learn-bottom-nav simulator-bottom-nav">
+          <a href="{{ url_for('learn_step', step=7) }}" class="learn-secondary-btn">
+            BACK
           </a>
-          <button type="submit" class="cookie-btn">
+          <button type="submit" class="learn-next-btn">
             {{ simulator["page"]["bake_button_label"]|upper }}
           </button>
-          {% if result %}
-            <a class="cookie-btn-ghost" href="{{ url_for('quiz_step', step=1) }}">
-              {{ simulator["page"]["next_button_label"] }}
-            </a>
-          {% endif %}
         </div>
       </form>
-    </div>
 
-    <div class="surface-card">
-      {% if result %}
-        <div class="eyebrow">baking result</div>
-        <h2 class="section-title">{{ result["cookie_type"] }}</h2>
-        <p>{{ result["explanation"] }}</p>
-
-        <div class="helper-panel mt-4">
-          <strong>What this means</strong>
-          This screen turns the ingredient rules into a visible outcome. If the result is not what you wanted, change one or two ingredient levels and bake again.
-        </div>
-      {% else %}
-        <div class="empty-state">
-          <div>
-            <div class="eyebrow">ready to bake</div>
-            <h2 class="section-title">Choose your ingredient levels</h2>
-            <p class="mb-0">Set each ingredient to low, medium, or high, then bake to see which cookie style your choices create.</p>
+      <div class="ingredient-info-card simulator-result-card">
+        {% if result %}
+          <div class="ingredient-info-card__header simulator-result-header">
+            <div class="ready-kicker">Baking Result</div>
+            <h2>{{ result["cookie_type"] }}</h2>
           </div>
-        </div>
-      {% endif %}
+
+          <div class="ingredient-copy">
+            <p>{{ result["explanation"] }}</p>
+            <p class="ingredient-highlight">Adjust a slider and bake again if you want a different texture.</p>
+          </div>
+
+          <div class="ready-buttons simulator-result-actions">
+            <a href="{{ url_for('quiz_step', step=1) }}" class="learn-next-btn">
+              {{ simulator["page"]["next_button_label"]|upper }}
+            </a>
+          </div>
+        {% else %}
+          <div class="simulator-placeholder">
+            <div
+              class="learn-bubble learn-bubble--talking intro-bubble"
+              data-typewriter="Choose your ingredient levels, then bake to preview the result."
+            >
+              Choose your ingredient levels, then bake to preview the result.
+            </div>
+
+            <img
+              src="{{ url_for('static', filename='images/2.png') }}"
+              alt="Cookie cat"
+              class="learn-cat learn-cat-small learn-cat-speaking"
+            >
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
 </section>

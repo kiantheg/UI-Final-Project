@@ -1,71 +1,73 @@
 {% extends "base.html" %}
+{% block body_class %}feedback-page{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="feedback-layout">
-    <div class="surface-card surface-card--accent">
-      <div class="eyebrow">quiz feedback</div>
-      <div class="mb-3">
-        {% if is_correct %}
-          <span class="feedback-badge feedback-badge--correct">Nice bake</span>
-        {% else %}
-          <span class="feedback-badge feedback-badge--retry">Try again mindset</span>
-        {% endif %}
-      </div>
-
-      <h1 class="section-title">
+<section class="page-shell page-shell--compact">
+  <div class="feedback-page-layout">
+    <div class="feedback-hero-card">
+      <div class="ready-kicker">Quiz Feedback</div>
+      <h1 class="feedback-title">
         {% if is_correct %}
           {{ question.feedback_title or "Correct!" }}
         {% else %}
-          Not quite yet
+          Not Quite Yet
         {% endif %}
       </h1>
-
-      <p>
+      <p class="feedback-subtitle">
         {% if is_correct %}
-          {{ question.feedback_text }}
+          Nice bake. You matched the cookie rule.
         {% else %}
-          Review the clue and compare it with the ingredient rules from the lesson. The next screen keeps the same guided flow moving forward.
+          Quick recap, then move to the next bake.
         {% endif %}
       </p>
 
-      <div class="button-row mt-4">
+      <div class="feedback-actions">
         {% if is_last %}
-          <a class="cookie-btn" href="{{ url_for('results') }}">Finish</a>
+          <a class="learn-next-btn" href="{{ url_for('results') }}">FINISH</a>
         {% else %}
-          <a class="cookie-btn" href="{{ url_for('quiz_step', step=next_step) }}">Next Question</a>
+          <a class="learn-next-btn" href="{{ url_for('quiz_step', step=next_step) }}">NEXT QUESTION</a>
         {% endif %}
       </div>
     </div>
 
-    <div class="surface-card">
-      <div class="eyebrow">lesson recap</div>
-
+    <div class="feedback-detail-grid">
       {% if question.type == "ingredient" %}
-        <h2 class="section-title">{{ question.goal }}</h2>
-        <p class="muted-copy">This target cookie depends on the right balance of spread, structure, and sugar type.</p>
-
-        <div class="recap-grid mt-3">
-          <div class="recap-card">
-            <div class="recap-card__kicker">Butter</div>
-            <p class="recap-card__title">{{ question.correct_answer.butter|title }}</p>
-          </div>
-          <div class="recap-card">
-            <div class="recap-card__kicker">Flour</div>
-            <p class="recap-card__title">{{ question.correct_answer.flour|title }}</p>
-          </div>
-          <div class="recap-card">
-            <div class="recap-card__kicker">Sugar</div>
-            <p class="recap-card__title">{{ question.correct_answer.sugar|title }} sugar</p>
+        <div class="feedback-mini-card">
+          <div class="feedback-mini-card__label">Your Answer</div>
+          <div class="feedback-answer-list">
+            <span>Butter: {{ user_response.butter|title }}</span>
+            <span>Flour: {{ user_response.flour|title }}</span>
+            <span>Sugar: {{ user_response.sugar|title }} Sugar</span>
           </div>
         </div>
-      {% else %}
-        <h2 class="section-title">Best adjustment</h2>
-        <p>{{ question.correct_answer }}</p>
 
-        <div class="helper-panel mt-3">
-          <strong>Why this matters</strong>
-          The recovery questions check whether you can diagnose a bad bake and connect it back to the ingredient rules you learned earlier.
+        <div class="feedback-mini-card">
+          <div class="feedback-mini-card__label">Correct Answer</div>
+          <div class="feedback-answer-list">
+            <span>Butter: {{ question.correct_answer.butter|title }}</span>
+            <span>Flour: {{ question.correct_answer.flour|title }}</span>
+            <span>Sugar: {{ question.correct_answer.sugar|title }} Sugar</span>
+          </div>
+        </div>
+
+        <div class="feedback-mini-card feedback-mini-card--wide">
+          <div class="feedback-mini-card__label">Why</div>
+          <p>{{ question.feedback_text }}</p>
+        </div>
+      {% else %}
+        <div class="feedback-mini-card">
+          <div class="feedback-mini-card__label">Your Answer</div>
+          <p>{{ user_response.answer }}</p>
+        </div>
+
+        <div class="feedback-mini-card">
+          <div class="feedback-mini-card__label">Correct Answer</div>
+          <p>{{ question.correct_answer }}</p>
+        </div>
+
+        <div class="feedback-mini-card feedback-mini-card--wide">
+          <div class="feedback-mini-card__label">Why</div>
+          <p>{{ question.feedback_text }}</p>
         </div>
       {% endif %}
     </div>

@@ -175,6 +175,10 @@ def reset_quiz_progress():
     save_state(state)
 
 
+def clear_saved_results():
+    save_state(default_state())
+
+
 def record_simulator_entry():
     state = load_state()
     state["simulator_visits"] += 1
@@ -407,6 +411,7 @@ def quiz_step(step):
     quiz_content = load_quiz_content()
     quiz_questions = quiz_content["quiz_questions"]
     question = get_quiz_question(quiz_questions, step)
+    question_ids = [item["id"] for item in quiz_questions]
     state = load_state()
     progress = get_quiz_progress(quiz_questions, state)
     review_mode = progress["completed"]
@@ -420,6 +425,11 @@ def quiz_step(step):
 
     if request.method == "GET":
         record_quiz_visit(step)
+        current_index = question_ids.index(step)
+        previous_review_step = question_ids[current_index - 1] if current_index > 0 else None
+        next_review_step = (
+            question_ids[current_index + 1] if current_index < len(question_ids) - 1 else None
+        )
         return render_template(
             "quiz_test.html",
             question=question,
@@ -428,6 +438,8 @@ def quiz_step(step):
             saved_correct=saved_response["correct"] if saved_response else None,
             review_index=step,
             total_questions=len(quiz_questions),
+            previous_review_step=previous_review_step,
+            next_review_step=next_review_step,
         )
 
     if review_mode:
@@ -443,6 +455,7 @@ def quiz_step(step):
         "feedback_test.html",
         question=question,
         is_correct=is_correct,
+        user_response=user_response,
         next_step=next_step,
         is_last=is_last,
     )
@@ -450,8 +463,15 @@ def quiz_step(step):
 
 @app.route("/quiz/restart", methods=["POST"])
 def restart_quiz():
+    clear_saved_results()
     reset_quiz_progress()
     return redirect(url_for("quiz_step", step=1))
+
+
+@app.route("/results/clear", methods=["POST"])
+def clear_results():
+    clear_saved_results()
+    return redirect(url_for("home"))
 
 
 @app.route("/results")

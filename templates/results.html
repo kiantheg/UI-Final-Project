@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% block body_class %}results-page{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="surface-card surface-card--accent">
-    <div class="score-summary">
-      <div class="score-ring" style="--score-progress: {{ quiz_percent }};">
+<section class="page-shell page-shell--compact">
+  <div class="results-page-layout">
+    <div class="results-score-card">
+      <div class="score-ring score-ring--compact" style="--score-progress: {{ quiz_percent }};">
         <svg class="score-ring__svg" viewBox="0 0 120 120" aria-hidden="true">
           <circle class="score-ring__track" cx="60" cy="60" r="48"></circle>
           <circle class="score-ring__progress" cx="60" cy="60" r="48"></circle>
@@ -15,55 +16,67 @@
         </div>
       </div>
 
-      <div>
-        <div class="eyebrow">final results</div>
-        <h1 class="section-title mb-2">{{ page.title }}</h1>
-        <p class="mb-2">{{ quiz_end_page.message }}</p>
-        <p class="muted-copy mb-1">{{ page.description }}</p>
-        <p class="mb-3">
+      <div class="results-score-copy">
+        <div class="ready-kicker">Final Results</div>
+        <h1 class="results-title">{{ page.title }}</h1>
+        <p class="results-subtitle">{{ quiz_end_page.message }}</p>
+      </div>
+    </div>
+
+    <div class="results-card-grid">
+      <div class="results-summary-card">
+        <div class="feedback-mini-card__label">Score</div>
+        <p class="results-summary-card__value">{{ quiz_score }} correct answers</p>
+        <p class="results-summary-card__copy">
           {% if quiz_percent >= 75 %}
-            Strong job. You applied the ingredient rules well and carried them through the quiz.
+            Strong cookie instincts.
           {% elif quiz_percent >= 50 %}
-            Nice progress. You understand the main ideas and can sharpen a few details with another try.
+            Solid progress. One more round will sharpen it.
           {% else %}
-            You have the core lesson in place. One more simulator round and quiz attempt should help the rules stick.
+            Review the ingredient clues and try again.
           {% endif %}
         </p>
-        <div class="button-row">
-          <a class="cookie-btn" href="{{ url_for('home') }}">{{ quiz_end_page.button_text }}</a>
+      </div>
+
+      <div class="results-summary-card">
+        <div class="feedback-mini-card__label">Cookie Goal</div>
+        <p class="results-summary-card__value">Match the target texture</p>
+        <p class="results-summary-card__copy">Use butter, flour, and sugar to bake flat, crispy, thick, and chewy cookies on purpose.</p>
+      </div>
+
+      <div class="results-summary-card">
+        <div class="feedback-mini-card__label">Next Actions</div>
+        <div class="results-actions">
+          <a class="learn-next-btn" href="{{ url_for('home') }}">{{ quiz_end_page.button_text }}</a>
           <form method="post" action="{{ url_for('restart_quiz') }}">
-            <button type="submit" class="cookie-btn-secondary">Retake Quiz</button>
+            <button type="submit" class="learn-secondary-btn results-action-btn">CLEAR RESULTS + RETAKE QUIZ</button>
           </form>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="results-grid">
-    <div class="stat-card">
-      <div class="stat-card__kicker">Quiz score</div>
-      <p class="stat-card__value">{{ quiz_score }} correct answers</p>
+    <div class="results-stats-strip">
+      <div class="stat-card">
+        <div class="stat-card__kicker">Quiz Percentage</div>
+        <p class="stat-card__value">{{ quiz_percent }}%</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__kicker">Simulator Bakes</div>
+        <p class="stat-card__value">{{ state.simulator_runs|length }}</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__kicker">{{ usage_stat.label }}</div>
+        <p class="stat-card__value">{{ usage_stat.value }}</p>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-card__kicker">Quiz percentage</div>
-      <p class="stat-card__value">{{ quiz_percent }}%</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card__kicker">Simulator bakes</div>
-      <p class="stat-card__value">{{ state.simulator_runs|length }} attempts</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card__kicker">{{ usage_stat.label }}</div>
-      <p class="stat-card__value">{{ usage_stat.value }}</p>
-    </div>
-  </div>
 
-  <div class="surface-card">
-    <div class="eyebrow">review questions</div>
-    <div class="button-row">
-      {% for question in quiz_questions %}
-        <a class="cookie-btn-ghost" href="{{ url_for('quiz_step', step=question.id) }}">Question {{ question.id }}</a>
-      {% endfor %}
+    <div class="results-review-card">
+      <div class="feedback-mini-card__label">Review Answers</div>
+      <div class="results-review-links">
+        {% for question in quiz_questions %}
+          <a class="cookie-btn-secondary" href="{{ url_for('quiz_step', step=question.id) }}">QUESTION {{ question.id }}</a>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </section>

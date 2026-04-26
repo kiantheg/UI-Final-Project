@@ -1,56 +1,80 @@
 {% extends "base.html" %}
+{% block body_class %}quiz-page{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="quiz-layout">
-    <aside class="quiz-sidebar">
-      <div class="surface-card progress-card">
-        <div class="eyebrow">quiz challenge</div>
-        <h1 class="section-title">Question {{ question.id }}</h1>
-        <p class="muted-copy mb-0">
-          {% if review_mode %}
-            Review your completed quiz answers without changing them.
-          {% else %}
-            Apply the ingredient rules from the lesson and choose the strongest answer before moving on.
-          {% endif %}
-        </p>
-
-        <div class="progress-strip">
-          <span class="progress-pill">{{ "Ingredient mix" if question.type == "ingredient" else "Fix-the-cookie" }}</span>
-          <span class="progress-pill">{% if review_mode %}Review mode{% else %}Step-by-step{% endif %}</span>
-        </div>
-
+<section class="learn-game quiz-game">
+  <div class="learn-stage quiz-stage">
+    <div class="learn-goal-row quiz-hero">
+      <div
+        class="learn-bubble learn-bubble-large learn-bubble--talking"
+        data-typewriter="{% if review_mode %}Review your finished quiz and compare your saved answers with the correct ones.{% else %}Use the Learn page rules to answer each cookie question step by step.{% endif %}"
+      >
         {% if review_mode %}
-          <a class="cookie-btn-secondary" href="{{ url_for('results') }}">Back to Results</a>
+          Review your finished quiz and compare your saved answers with the correct ones.
+        {% else %}
+          Use the Learn page rules to answer each cookie question step by step.
         {% endif %}
       </div>
 
-      {% if question.type == "ingredient" %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">How to think about it</strong>
-          <p class="mb-0">{{ question.hint }}</p>
-        </div>
-      {% else %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">Use the lesson clues</strong>
-          <p class="mb-0">Think about which ingredient shifts spread, crispiness, thickness, or chewiness in the right direction.</p>
-        </div>
-      {% endif %}
-    </aside>
+      <img
+        src="{{ url_for('static', filename='images/2.png') }}"
+        alt="Cookie cat"
+        class="learn-cat learn-cat-talking learn-cat-speaking"
+      >
+    </div>
 
-    <div class="quiz-main">
-      <div class="surface-card surface-card--accent question-card">
+    <div class="learn-two-column quiz-two-column">
+      <aside class="ingredient-menu quiz-sidebar-panel">
+        <div class="ingredient-menu-header">
+          <h1 class="learn-title">Question {{ question.id }}</h1>
+          <p class="quiz-sidebar-copy">
+            {% if review_mode %}
+              Review your completed quiz answers without changing them.
+            {% else %}
+              Apply the ingredient rules from the lesson and choose the strongest answer before moving on.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="ingredient-menu-row quiz-status-row">
+          <span>{{ "Ingredient Mix" if question.type == "ingredient" else "Fix the Cookie" }}</span>
+        </div>
+        <div class="ingredient-menu-row quiz-status-row">
+          <span>{% if review_mode %}Review Mode{% else %}Step by Step{% endif %}</span>
+        </div>
+
+        <div class="quiz-tip-card">
+          <h2>{% if question.type == "ingredient" %}How to think about it{% else %}Use the lesson clues{% endif %}</h2>
+          <p>
+            {% if question.type == "ingredient" %}
+              {{ question.hint }}
+            {% else %}
+              Think about which ingredient shifts spread, crispiness, thickness, or chewiness in the right direction.
+            {% endif %}
+          </p>
+        </div>
+
+        {% if review_mode %}
+          <div class="ready-buttons quiz-sidebar-actions">
+            <a href="{{ url_for('results') }}" class="learn-secondary-btn">BACK TO RESULTS</a>
+          </div>
+        {% endif %}
+      </aside>
+
+      <div class="ingredient-info-card quiz-question-card">
         {% if question.type == "ingredient" %}
-          <div class="goal-banner">
-            <div class="goal-banner__label">Cookie goal</div>
-            <h2 class="goal-banner__title">{{ question.goal }}</h2>
+          <div class="ingredient-info-card__header quiz-question-header">
+            <div class="ready-kicker">Cookie Goal</div>
+            <h2>{{ question.goal }}</h2>
           </div>
 
-          <p class="mb-0">{{ question.hint }}</p>
+          <div class="ingredient-copy">
+            <p>{{ question.hint }}</p>
+          </div>
 
-          <form method="POST" class="field-stack">
+          <form method="POST" class="field-stack quiz-form-stack">
             <div>
-              <label class="field-label">Butter</label>
+              <label class="field-label quiz-field-label">Butter</label>
               <div class="option-grid">
                 {% for level in ["low", "medium", "high"] %}
                   {% set is_selected = saved_response.get("butter") == level %}
@@ -58,14 +82,22 @@
                   <label class="option-card">
                     <input type="radio" name="butter" value="{{ level }}" required {% if review_mode %}disabled{% endif %} {% if saved_response.get("butter") == level %}checked{% endif %}>
                     <span class="option-card__body{% if review_mode and is_selected %} option-card__body--selected{% endif %}{% if review_mode and is_correct_answer %} option-card__body--correct{% endif %}">
-                      <span class="option-card__eyebrow">butter</span>
-                      <span class="option-card__title">{{ level|title }}</span>
-                      {% if review_mode and is_selected %}
-                        <span class="option-card__tag option-card__tag--selected">Your Answer</span>
-                      {% endif %}
-                      {% if review_mode and is_correct_answer %}
-                        <span class="option-card__tag option-card__tag--correct">Correct Answer</span>
-                      {% endif %}
+                      <span class="option-card__content">
+                        <span class="option-card__eyebrow">butter</span>
+                        <span class="option-card__title">{{ level|title }}</span>
+                        <span class="option-card__spacer"></span>
+                        {% if review_mode and (is_selected or is_correct_answer) %}
+                          <span class="option-card__status-line">
+                            {% if is_selected and is_correct_answer %}
+                              Your Answer • Correct
+                            {% elif is_correct_answer %}
+                              Correct Answer
+                            {% else %}
+                              Your Answer
+                            {% endif %}
+                          </span>
+                        {% endif %}
+                      </span>
                     </span>
                   </label>
                 {% endfor %}
@@ -73,7 +105,7 @@
             </div>
 
             <div>
-              <label class="field-label">Flour</label>
+              <label class="field-label quiz-field-label">Flour</label>
               <div class="option-grid">
                 {% for level in ["low", "medium", "high"] %}
                   {% set is_selected = saved_response.get("flour") == level %}
@@ -81,14 +113,22 @@
                   <label class="option-card">
                     <input type="radio" name="flour" value="{{ level }}" required {% if review_mode %}disabled{% endif %} {% if saved_response.get("flour") == level %}checked{% endif %}>
                     <span class="option-card__body{% if review_mode and is_selected %} option-card__body--selected{% endif %}{% if review_mode and is_correct_answer %} option-card__body--correct{% endif %}">
-                      <span class="option-card__eyebrow">flour</span>
-                      <span class="option-card__title">{{ level|title }}</span>
-                      {% if review_mode and is_selected %}
-                        <span class="option-card__tag option-card__tag--selected">Your Answer</span>
-                      {% endif %}
-                      {% if review_mode and is_correct_answer %}
-                        <span class="option-card__tag option-card__tag--correct">Correct Answer</span>
-                      {% endif %}
+                      <span class="option-card__content">
+                        <span class="option-card__eyebrow">flour</span>
+                        <span class="option-card__title">{{ level|title }}</span>
+                        <span class="option-card__spacer"></span>
+                        {% if review_mode and (is_selected or is_correct_answer) %}
+                          <span class="option-card__status-line">
+                            {% if is_selected and is_correct_answer %}
+                              Your Answer • Correct
+                            {% elif is_correct_answer %}
+                              Correct Answer
+                            {% else %}
+                              Your Answer
+                            {% endif %}
+                          </span>
+                        {% endif %}
+                      </span>
                     </span>
                   </label>
                 {% endfor %}
@@ -96,22 +136,30 @@
             </div>
 
             <div>
-              <label class="field-label">Sugar Type</label>
+              <label class="field-label quiz-field-label">Sugar Type</label>
               <div class="option-grid option-grid--two">
                 {% set is_white_selected = saved_response.get("sugar") == "white" %}
                 {% set is_white_correct = question.correct_answer.sugar == "white" %}
                 <label class="option-card">
                   <input type="radio" name="sugar" value="white" required {% if review_mode %}disabled{% endif %} {% if saved_response.get("sugar") == "white" %}checked{% endif %}>
                   <span class="option-card__body{% if review_mode and is_white_selected %} option-card__body--selected{% endif %}{% if review_mode and is_white_correct %} option-card__body--correct{% endif %}">
-                    <span class="option-card__eyebrow">sugar</span>
-                    <span class="option-card__title">White Sugar</span>
-                    <span class="option-card__copy">More spread, more crisp.</span>
-                    {% if review_mode and is_white_selected %}
-                      <span class="option-card__tag option-card__tag--selected">Your Answer</span>
-                    {% endif %}
-                    {% if review_mode and is_white_correct %}
-                      <span class="option-card__tag option-card__tag--correct">Correct Answer</span>
-                    {% endif %}
+                    <span class="option-card__content">
+                      <span class="option-card__eyebrow">sugar</span>
+                      <span class="option-card__title">White Sugar</span>
+                      <span class="option-card__copy">More spread, more crisp.</span>
+                      <span class="option-card__spacer"></span>
+                      {% if review_mode and (is_white_selected or is_white_correct) %}
+                        <span class="option-card__status-line">
+                          {% if is_white_selected and is_white_correct %}
+                            Your Answer • Correct
+                          {% elif is_white_correct %}
+                            Correct Answer
+                          {% else %}
+                            Your Answer
+                          {% endif %}
+                        </span>
+                      {% endif %}
+                    </span>
                   </span>
                 </label>
                 {% set is_brown_selected = saved_response.get("sugar") == "brown" %}
@@ -119,22 +167,30 @@
                 <label class="option-card">
                   <input type="radio" name="sugar" value="brown" required {% if review_mode %}disabled{% endif %} {% if saved_response.get("sugar") == "brown" %}checked{% endif %}>
                   <span class="option-card__body{% if review_mode and is_brown_selected %} option-card__body--selected{% endif %}{% if review_mode and is_brown_correct %} option-card__body--correct{% endif %}">
-                    <span class="option-card__eyebrow">sugar</span>
-                    <span class="option-card__title">Brown Sugar</span>
-                    <span class="option-card__copy">More moisture, more chew.</span>
-                    {% if review_mode and is_brown_selected %}
-                      <span class="option-card__tag option-card__tag--selected">Your Answer</span>
-                    {% endif %}
-                    {% if review_mode and is_brown_correct %}
-                      <span class="option-card__tag option-card__tag--correct">Correct Answer</span>
-                    {% endif %}
+                    <span class="option-card__content">
+                      <span class="option-card__eyebrow">sugar</span>
+                      <span class="option-card__title">Brown Sugar</span>
+                      <span class="option-card__copy">More moisture, more chew.</span>
+                      <span class="option-card__spacer"></span>
+                      {% if review_mode and (is_brown_selected or is_brown_correct) %}
+                        <span class="option-card__status-line">
+                          {% if is_brown_selected and is_brown_correct %}
+                            Your Answer • Correct
+                          {% elif is_brown_correct %}
+                            Correct Answer
+                          {% else %}
+                            Your Answer
+                          {% endif %}
+                        </span>
+                      {% endif %}
+                    </span>
                   </span>
                 </label>
               </div>
             </div>
 
             {% if review_mode %}
-              <div class="helper-panel">
+              <div class="helper-panel quiz-helper-panel">
                 <strong>Answer review</strong>
                 {% if saved_correct %}
                   Your saved choice matched the correct answer.
@@ -142,18 +198,31 @@
                   Your saved choice and the correct answer are both marked above.
                 {% endif %}
               </div>
+              <div class="learn-bottom-nav quiz-bottom-nav quiz-bottom-nav--review">
+                {% if previous_review_step %}
+                  <a href="{{ url_for('quiz_step', step=previous_review_step) }}" class="learn-secondary-btn">PREV</a>
+                {% endif %}
+                {% if next_review_step %}
+                  <a href="{{ url_for('quiz_step', step=next_review_step) }}" class="learn-next-btn">NEXT</a>
+                {% endif %}
+              </div>
             {% else %}
-              <div class="button-row">
-                <button type="submit" class="cookie-btn">BAKE</button>
+              <div class="learn-bottom-nav quiz-bottom-nav">
+                <button type="submit" class="learn-next-btn">BAKE</button>
               </div>
             {% endif %}
           </form>
         {% else %}
-          <div class="eyebrow">cookie rescue</div>
-          <h2 class="section-title">{{ question.prompt }}</h2>
-          <p class="muted-copy mb-0">Pick the adjustment that best moves the cookie toward the target texture.</p>
+          <div class="ingredient-info-card__header quiz-question-header">
+            <div class="ready-kicker">Cookie Rescue</div>
+            <h2>{{ question.prompt }}</h2>
+          </div>
 
-          <form method="POST" class="field-stack mt-2">
+          <div class="ingredient-copy">
+            <p>Pick the adjustment that best moves the cookie toward the target texture.</p>
+          </div>
+
+          <form method="POST" class="field-stack quiz-form-stack">
             <div class="choice-stack">
               {% for choice in question.choices %}
                 {% set is_selected = saved_response.get("answer") == choice %}
@@ -162,13 +231,19 @@
                   <input type="radio" name="answer" value="{{ choice }}" required {% if review_mode %}disabled{% endif %} {% if saved_response.get("answer") == choice %}checked{% endif %}>
                   <span class="option-card__body{% if review_mode and is_selected %} option-card__body--selected{% endif %}{% if review_mode and is_correct_answer %} option-card__body--correct{% endif %}">
                     <span class="choice-index">{{ loop.index }}</span>
-                    <span>
+                    <span class="option-card__content">
                       <span class="option-card__title d-block">{{ choice }}</span>
-                      {% if review_mode and is_selected %}
-                        <span class="option-card__tag option-card__tag--selected">Your Answer</span>
-                      {% endif %}
-                      {% if review_mode and is_correct_answer %}
-                        <span class="option-card__tag option-card__tag--correct">Correct Answer</span>
+                      <span class="option-card__spacer"></span>
+                      {% if review_mode and (is_selected or is_correct_answer) %}
+                        <span class="option-card__status-line">
+                          {% if is_selected and is_correct_answer %}
+                            Your Answer • Correct
+                          {% elif is_correct_answer %}
+                            Correct Answer
+                          {% else %}
+                            Your Answer
+                          {% endif %}
+                        </span>
                       {% endif %}
                     </span>
                   </span>
@@ -177,7 +252,7 @@
             </div>
 
             {% if review_mode %}
-              <div class="helper-panel">
+              <div class="helper-panel quiz-helper-panel">
                 <strong>Answer review</strong>
                 {% if saved_correct %}
                   Your saved choice matched the correct answer.
@@ -185,9 +260,17 @@
                   Your saved choice and the correct answer are both marked above.
                 {% endif %}
               </div>
+              <div class="learn-bottom-nav quiz-bottom-nav quiz-bottom-nav--review">
+                {% if previous_review_step %}
+                  <a href="{{ url_for('quiz_step', step=previous_review_step) }}" class="learn-secondary-btn">PREV</a>
+                {% endif %}
+                {% if next_review_step %}
+                  <a href="{{ url_for('quiz_step', step=next_review_step) }}" class="learn-next-btn">NEXT</a>
+                {% endif %}
+              </div>
             {% else %}
-              <div class="button-row">
-                <button type="submit" class="cookie-btn">SUBMIT</button>
+              <div class="learn-bottom-nav quiz-bottom-nav">
+                <button type="submit" class="learn-next-btn">SUBMIT</button>
               </div>
             {% endif %}
           </form>
