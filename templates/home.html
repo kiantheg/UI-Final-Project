@@ -1,63 +1,27 @@
 {% extends "base.html" %}
-
+{% block body_class %}home-page{% endblock %}
+{% block main_class %}app-main--home{% endblock %}
 {% block content %}
-<section class="page-shell">
-  <div class="surface-card surface-card--accent">
-    <div class="hero-grid">
-      <div>
-        <div class="eyebrow">warm-up lesson</div>
-        <h1 class="page-title">{{ home.title|upper }}</h1>
-        <p class="page-copy mt-3 mb-4">
-          {{ home.description }}
-        </p>
 
-        <div class="hero-badges mb-4">
-          <span class="hero-badge">Learn ingredient effects</span>
-          <span class="hero-badge">Bake test cookies</span>
-          <span class="hero-badge">Finish the quiz flow</span>
-        </div>
+<section class="pixel-home">
 
-        <div class="helper-panel mb-4">
-          <strong>Your mission</strong>
-          Follow the guided learning screens, remember how butter, flour, and sugars change the dough, then use that knowledge in the simulator and quiz.
-        </div>
+  <div class="cookie1"></div>
+  <div class="cookie2"></div>
+  <div class="cookie3"></div>
+  <div class="cookie4"></div>
 
-        <form method="post">
-          <button type="submit" class="cookie-btn">
-            {{ home.start_button_label|upper }}
-          </button>
-        </form>
-      </div>
+  <div class="pixel-home-content">
+    <h1 class="pixel-title">Ready to bake?</h1>
 
-      <div class="hero-visual">
-        <div class="surface-card surface-card--tight">
-          <div class="eyebrow">cookie goals</div>
-          <div class="list-grid">
-            <div class="list-card">
-              <div class="list-card__kicker">target texture</div>
-              <p class="list-card__title">Flat</p>
-            </div>
-            <div class="list-card">
-              <div class="list-card__kicker">target texture</div>
-              <p class="list-card__title">Chewy</p>
-            </div>
-            <div class="list-card">
-              <div class="list-card__kicker">target texture</div>
-              <p class="list-card__title">Thick</p>
-            </div>
-            <div class="list-card">
-              <div class="list-card__kicker">target texture</div>
-              <p class="list-card__title">Crispy</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="side-note">
-          <strong>What you will practice</strong>
-          Ingredient effects, cookie goals, simulator decisions, and short quiz feedback that explains why each cookie turns out flat, chewy, thick, or crispy.
-        </div>
-      </div>
+    <div class="pixel-images">
+      <img src="{{ url_for('static', filename='images/2.png') }}" alt="Cookie chef cat">
     </div>
+
+    <a href="{{ url_for('learn_step', step=1) }}" class="pixel-btn">
+      START
+    </a>
   </div>
+
 </section>
+
 {% endblock %}

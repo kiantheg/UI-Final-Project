@@ -1,124 +1,171 @@
 {% extends "base.html" %}
+{% block body_class %}learn-page{% endblock %}
+{% block main_class %}app-main--learn{% endblock %}
 
 {% block content %}
-<section class="page-shell">
-  <div class="lesson-layout">
-    <aside class="lesson-sidebar">
-      <div class="surface-card progress-card">
-        <div class="eyebrow">learning flow</div>
-        <div>
-          <h1 class="section-title">Step {{ step_data["step"] }}</h1>
-          <p class="muted-copy mb-0">Follow the lesson in order so the simulator and quiz feel easier to solve.</p>
-        </div>
+{% set step = step_data["step"]|int %}
+<section class="learn-game {% if step != 7 %}learn-game--with-nav{% endif %}">
+  <div class="learn-stage">
+  {% set target_names = ["Flat", "Chewy", "Thick", "Crispy"] %}
+  {% set target_imgs = ["thin.png", "chewy.png", "thick.png", "crispy.png"] %}
 
-        <div class="progress-meter">
-          <span style="width: {{ (step_data['step'] / total_steps) * 100 }}%"></span>
-        </div>
+  {% set ingredient_names = ["Butter", "Flour", "White Sugar", "Brown Sugar"] %}
+  {% set ingredient_imgs = ["butter.png", "flour.png", "white sugar.png", "brown sugar.png"] %}
 
-        <div class="progress-strip">
-          <span class="progress-pill">{{ step_data["step"] }} of {{ total_steps }}</span>
-          {% if step_data["step"] <= 2 %}
-            <span class="progress-pill">Mission setup</span>
-          {% elif step_data["step"] <= 6 %}
-            <span class="progress-pill">Ingredient focus</span>
-          {% else %}
-            <span class="progress-pill">Ready to play</span>
-          {% endif %}
-        </div>
+  {% if step == 1 %}
+
+    <div class="learn-goal-row">
+      <div
+        class="learn-bubble learn-bubble-large learn-bubble--talking"
+        data-typewriter="Your goal: Create each cookie type by adjusting ingredients."
+      >
+        Your goal: Create each cookie type by adjusting ingredients.
       </div>
 
-      {% if step_data["step"] == 1 %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">Goal preview</strong>
-          <p class="mb-0">You are learning how ingredient choices shape the cookie so you can intentionally bake each target style later.</p>
-        </div>
-      {% elif step_data["step"] == 2 %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">Ingredient map</strong>
-          <p class="mb-0">Keep an eye on spread, structure, crispiness, and moisture. Those four ideas drive the whole interaction flow.</p>
-        </div>
-      {% elif step_data["step"] == 7 %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">Next section</strong>
-          <p class="mb-0">The simulator tests your ingredient instincts first. The quiz then checks whether you can apply those rules quickly.</p>
-        </div>
-      {% else %}
-        <div class="surface-card surface-card--tight">
-          <strong class="d-block mb-2">Remember this rule</strong>
-          <p class="mb-0">{{ step_data.get("highlight", "This ingredient changes cookie structure and texture.") }}</p>
-        </div>
-      {% endif %}
-    </aside>
+      <img
+        src="{{ url_for('static', filename='images/2.png') }}"
+        alt="Cookie cat"
+        class="learn-cat learn-cat-talking learn-cat-speaking"
+      >
+    </div>
 
-    <div class="lesson-main">
-      <div class="surface-card surface-card--accent">
-        <div class="eyebrow">guided lesson</div>
-        <h1 class="section-title">{{ step_data["title"] }}</h1>
+    <div class="target-grid">
+      {% for name in target_names %}
+        <div class="target-card">
+          <img
+            src="{{ url_for('static', filename='images/' ~ target_imgs[loop.index0]) }}"
+            alt="{{ name }} cookie"
+            class="target-cookie-img"
+          >
+          <div class="target-label">{{ name }}</div>
+        </div>
+      {% endfor %}
+    </div>
 
-        {% for paragraph in step_data["body"] %}
-          <p>{{ paragraph }}</p>
+  {% elif step == 2 %}
+
+    <div class="learn-two-column learn-two-column--intro">
+      <div class="ingredient-menu ingredient-menu--intro">
+        <div class="ingredient-menu-header">
+          <h1 class="learn-title">Ingredients List</h1>
+        </div>
+        {% for name in ingredient_names %}
+          <div class="ingredient-menu-row">
+            <img
+              src="{{ url_for('static', filename='images/' ~ ingredient_imgs[loop.index0]) }}"
+              alt="{{ name }}"
+              class="ingredient-icon"
+            >
+            <span>{{ name }}</span>
+          </div>
         {% endfor %}
-
-        {% if step_data["step"] in [3, 4, 5, 6] %}
-          <div class="ingredient-spotlight mt-4">
-            <div class="ingredient-spotlight__icon">
-              {% if step_data["title"] == "Butter" %}🧈{% elif step_data["title"] == "Flour" %}🌾{% elif step_data["title"] == "White Sugar" %}🍬{% else %}🍯{% endif %}
-            </div>
-            <div class="ingredient-spotlight__copy">
-              <h2 class="section-title">{{ step_data["title"] }}</h2>
-              <p class="mb-0">
-                {% if step_data["title"] == "Butter" %}
-                  Controls spread during baking. More butter usually pushes the cookie outward and flatter.
-                {% elif step_data["title"] == "Flour" %}
-                  Gives the dough structure. More flour helps the cookie keep shape and bake thicker.
-                {% elif step_data["title"] == "White Sugar" %}
-                  Encourages spread and crispiness, making the bake feel lighter and snappier.
-                {% else %}
-                  Adds moisture and softness, which is why chewier cookies often rely on it.
-                {% endif %}
-              </p>
-            </div>
-          </div>
-        {% endif %}
-
-        {% if step_data.get("list_title") %}
-          <div class="mt-4">
-            <p class="eyebrow mb-3">{{ step_data["list_title"] }}</p>
-            <div class="list-grid">
-              {% for item in step_data["items"] %}
-                <div class="list-card">
-                  <div class="list-card__kicker">
-                    {% if step_data["step"] == 1 %}cookie target{% else %}ingredient{% endif %}
-                  </div>
-                  <p class="list-card__title">{{ item }}</p>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
-
-        {% if step_data.get("highlight") %}
-          <div class="fact-callout mt-4">
-            <strong>Key takeaway</strong>
-            {{ step_data["highlight"] }}
-          </div>
-        {% endif %}
       </div>
 
-      <div class="surface-card surface-card--tight">
-        <div class="button-row">
-          {% if previous_step %}
-            <a class="cookie-btn-secondary" href="{{ url_for('learn_step', step=previous_step) }}">
-              Back
-            </a>
-          {% endif %}
+      <div class="intro-helper-card">
+        <div
+          class="learn-bubble learn-bubble--talking intro-bubble"
+          data-typewriter="These are the main ingredients you’ll be working with. Let’s go over each one!"
+        >
+          These are the main ingredients you’ll be working with. Let’s go over each one!
+        </div>
 
-          <a class="cookie-btn" href="{{ next_url }}">
-            {{ next_button_label }}
+        <img
+          src="{{ url_for('static', filename='images/2.png') }}"
+          alt="Cookie cat"
+          class="learn-cat learn-cat-small learn-cat-speaking"
+        >
+      </div>
+    </div>
+
+  {% elif step >= 3 and step <= 6 %}
+
+    {% set active_index = step - 3 %}
+
+    <div class="learn-two-column learn-two-column--detail">
+      <div class="ingredient-menu ingredient-menu--detail">
+        <div class="ingredient-menu-header">
+          <h1 class="learn-title">Ingredients List</h1>
+        </div>
+        {% for name in ingredient_names %}
+          <div class="ingredient-menu-row {% if loop.index0 == active_index %}active{% endif %}">
+            <img
+              src="{{ url_for('static', filename='images/' ~ ingredient_imgs[loop.index0]) }}"
+              alt="{{ name }}"
+              class="ingredient-icon"
+            >
+            <span>{{ name }}</span>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="ingredient-info-card">
+        <div class="ingredient-info-card__header">
+          <img
+            src="{{ url_for('static', filename='images/' ~ ingredient_imgs[active_index]) }}"
+            alt="{{ step_data['title'] }}"
+            class="ingredient-big-img"
+          >
+
+          <h2>{{ step_data["title"] }}</h2>
+        </div>
+
+        <div class="ingredient-copy">
+          {% for paragraph in step_data["body"] %}
+            <p>{{ paragraph }}</p>
+          {% endfor %}
+
+          {% if step_data.get("highlight") %}
+            <p class="ingredient-highlight">{{ step_data["highlight"] }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+
+    <div class="ready-screen">
+      <div class="ready-content">
+        <div class="ready-kicker">Next Up: Simulator</div>
+        <div
+          class="learn-bubble final-bubble learn-bubble--talking"
+          data-typewriter="Now that you know each ingredient, let’s simulate what you learned. Are you ready?"
+        >
+          Now that you know each ingredient, let’s simulate what you learned.
+          <br>
+          Are you ready?
+        </div>
+
+        <img
+          src="{{ url_for('static', filename='images/2.png') }}"
+          alt="Cookie cat"
+          class="ready-cat learn-cat-speaking"
+        >
+
+        <div class="ready-buttons">
+          <a href="{{ next_url }}" class="learn-next-btn">YES</a>
+          <a href="{{ url_for('learn_step', step=1) }}" class="learn-secondary-btn">
+            REVIEW AGAIN
           </a>
         </div>
       </div>
     </div>
+
+  {% endif %}
   </div>
+
+  {% if step != 7 %}
+    <div class="learn-bottom-nav">
+      {% if previous_step %}
+        <a href="{{ url_for('learn_step', step=previous_step) }}" class="learn-secondary-btn">
+          BACK
+        </a>
+      {% endif %}
+
+      <a href="{{ next_url }}" class="learn-next-btn">
+        NEXT
+      </a>
+    </div>
+  {% endif %}
+
 </section>
 {% endblock %}
