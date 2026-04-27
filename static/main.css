@@ -492,11 +492,12 @@ body.simulator-page .app-main {
 .ingredient-menu-hint {
   margin: 8px 0 0;
   font-family: monospace;
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1.2;
   color: rgba(44, 17, 7, 0.68);
   white-space: nowrap;
 }
+
 
 .learn-two-column--intro .ingredient-menu-header {
   margin-bottom: 8px;
@@ -678,6 +679,7 @@ body.simulator-page .app-main {
   width: 100%;
   max-width: 430px;
   padding: 0 8px 4px;
+  font-size: 15px;
 }
 
 .ingredient-big-img {
@@ -704,6 +706,16 @@ body.simulator-page .app-main {
 }
 
 .ingredient-highlight {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.ingredient-highlight.is-hidden {
+  display: none;
+}
+
+.ingredient-copy .ingredient-highlight {
+  font-size: 28px;
   font-weight: 900;
 }
 
@@ -933,6 +945,12 @@ body.simulator-page .app-main {
 .score-summary {
   display: grid;
   gap: 24px;
+}
+
+.simulator-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
 .simulator-layout {
@@ -1238,6 +1256,7 @@ body.simulator-page .app-main {
   flex: 1 1 auto;
   height: 100%;
   min-height: 0;
+  align-items: center;
 }
 
 .simulator-bottom-row,
@@ -1248,6 +1267,7 @@ body.simulator-page .app-main {
   gap: 34px;
   flex: 1 1 auto;
   min-height: 0;
+  justify-content: flex-end;
 }
 
 .simulator-panel,
@@ -1337,6 +1357,9 @@ body.simulator-page .app-main {
 .simulator-result-card,
 .quiz-question-card {
   justify-content: flex-start;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .simulator-control-board {
@@ -1417,6 +1440,11 @@ body.simulator-page .app-main {
   padding-inline: 4px;
 }
 
+.simulator-result-explanation{
+  font-size: 25px;
+  padding: 16px 18px;
+  border-radius: 28px;
+}
 .simulator-panel .learn-title,
 .quiz-sidebar-panel .learn-title {
   margin-bottom: 6px;
@@ -1432,7 +1460,9 @@ body.simulator-page .app-main {
 }
 
 .simulator-guide-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   min-height: 320px;
   max-height: none;
   padding: 0 0 18px 18px;
@@ -1443,6 +1473,7 @@ body.simulator-page .app-main {
   background: transparent;
   border: 0;
   box-shadow: none;
+  order: 2;
 }
 
 .simulator-guide-content {
@@ -1469,6 +1500,7 @@ body.simulator-page .app-main {
   max-width: 520px;
   justify-self: center;
   transform: translateX(20px);
+  order: 1;
 }
 
 .simulator-placeholder {
@@ -1508,7 +1540,7 @@ body.simulator-page .app-main {
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px 18px;
-  margin-top: 0;
+  margin-top: 32px;
   padding-top: 12px;
   padding-bottom: 12px;
 }
@@ -1529,6 +1561,7 @@ body.simulator-page .app-main {
   text-align: center;
   justify-content: center;
   width: 100%;
+  font-size: 30px;
 }
 
 .simulator-result-card .ready-kicker {
@@ -1639,16 +1672,16 @@ body.simulator-page .app-main {
 .simulator-result-actions .learn-secondary-btn {
   min-width: 156px;
   height: 42px;
-  padding: 0 18px;
-  font-size: 14px;
+  padding: 0 24px;
+  font-size: 26px;
 }
 
 .simulator-result-actions .learn-secondary-btn {
-  min-width: 210px;
+  min-width: 156px;
 }
 
 .simulator-result-actions a.learn-secondary-btn {
-  min-width: 290px;
+  min-width: 156px;
 }
 
 .simulator-result-card,
@@ -1663,6 +1696,7 @@ body.simulator-page .app-main {
 
 .simulator-result-card .ingredient-info-card__header {
   max-width: 100%;
+  font-size: 30px;
 }
 
 .simulator-result-card .simulator-placeholder--result,

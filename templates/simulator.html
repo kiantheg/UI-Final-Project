@@ -26,6 +26,7 @@
           {% for ingredient in simulator["ingredients"] %}
             {% set current_level = selections[ingredient["key"]] %}
             {% set current_index = simulator["levels"].index(current_level) %}
+
             <div class="ingredient-menu-row simulator-control-row simulator-control-tile">
               <img
                 src="{{ url_for('static', filename='images/' ~ ingredient_images[ingredient['key']]) }}"
@@ -34,24 +35,35 @@
               >
 
               <div class="simulator-control-input">
-                <label class="simulator-control-label simulator-control-label--compact" for="{{ ingredient["key"] }}">
+                <label class="simulator-control-label simulator-control-label--compact"
+                      for="{{ ingredient["key"] }}">
                   {{ ingredient["label"] }}
                 </label>
-                <input type="hidden" name="{{ ingredient["key"] }}" value="{{ current_level }}" data-slider-hidden-for="{{ ingredient["key"] }}">
+
                 <input
-                  class="ingredient-slider"
-                  id="{{ ingredient["key"] }}"
-                  type="range"
-                  min="0"
-                  max="{{ simulator['levels']|length - 1 }}"
-                  step="1"
-                  value="{{ current_index }}"
-                  data-level-slider
-                  data-target="{{ ingredient['key'] }}"
-                  data-levels='{{ simulator["levels"] | tojson }}'>
+                  name="{{ ingredient['key'] }}"
+                  type="hidden"
+                  value="{{ current_level }}"
+                  data-slider-hidden-for="{{ ingredient['key'] }}"
+                >
+                <input class="ingredient-slider"
+                      id="{{ ingredient["key"] }}"
+                      type="range"
+                      min="0"
+                      max="{{ simulator['levels']|length - 1 }}"
+                      step="1"
+                      value="{{ current_index }}"
+                      data-level-slider
+                      data-target="{{ ingredient['key'] }}"
+                      data-levels='{{ simulator["levels"] | tojson }}'>
+
                 <div class="slider-labels" aria-hidden="true">
                   {% for level in simulator["levels"] %}
-                    <span class="{% if level == current_level %}is-active{% endif %}" data-slider-label-for="{{ ingredient["key"] }}" data-level="{{ level }}">{{ level|title }}</span>
+                    <span class="{% if level == current_level %}is-active{% endif %}"
+                          data-slider-label-for="{{ ingredient["key"] }}"
+                          data-level="{{ level }}">
+                      {{ level|title }}
+                    </span>
                   {% endfor %}
                 </div>
               </div>
@@ -60,13 +72,21 @@
         </div>
       </div>
 
+      <div class="simulator-actions">
+        <button type="submit" name="simulator_action" value="bake" class="learn-next-btn">
+          {{ simulator["page"]["bake_button_label"]|upper }}
+        </button>
+        <button type="submit" name="simulator_action" value="reset" class="learn-secondary-btn">
+          TRY ANOTHER COMBO
+        </button>
+      </div>
+
       <div class="simulator-bottom-row">
         <div class="ingredient-info-card simulator-guide-card">
           {% if result %}
             {% if result["recipe_id"] %}
-              {% if can_continue_to_quiz %}
-                {% set helper_text = "You made all possible combinations. You should move onto the quiz!" %}
-              {% elif result["recipe_id"] == "flat_cookie" %}
+              
+              {% if result["recipe_id"] == "flat_cookie" %}
                 {% set helper_text = "Yay! You made a flat cookie. High butter and low flour helped it spread. Try another combo!" %}
               {% elif result["recipe_id"] == "chewy_cookie" %}
                 {% set helper_text = "Yay! You made a chewy cookie. Brown sugar helped keep it soft. Try another combo!" %}
@@ -96,6 +116,18 @@
               {{ helper_text }}
             </div>
           </div>
+
+           <div class="ready-buttons simulator-result-actions">
+              <a href="{{ url_for('learn_step', step=7) }}" class="learn-secondary-btn">
+                {{ simulator["page"]["back_button_label"]|upper }}
+              </a>
+              <a href="{{ url_for('quiz_step', step=1) }}" class="learn-next-btn">
+                {{ simulator["page"]["next_button_label"]|upper }}
+              </a>
+            </div>
+
+         
+
         </div>
 
         <div class="simulator-result-column">
@@ -116,24 +148,16 @@
                   >
                 {% endif %}
               </div>
-            {% else %}
-              <div class="simulator-placeholder simulator-placeholder--result" aria-hidden="true"></div>
-            {% endif %}
+                <div class="simulator-result-explanation">
+                  {{ result["explanation"] }}
+                </div>
 
-            <div class="ready-buttons simulator-result-actions">
-              <button type="submit" name="simulator_action" value="bake" class="learn-next-btn">
-                {{ simulator["page"]["bake_button_label"]|upper }}
-              </button>
-              <button type="submit" name="simulator_action" value="reset" class="learn-secondary-btn">
-                TRY ANOTHER COMBO
-              </button>
-              {% if can_continue_to_quiz %}
-                <a href="{{ url_for('quiz_step', step=1) }}" class="learn-secondary-btn">
-                  {{ simulator["page"]["next_button_label"]|upper }}
-                </a>
               {% endif %}
-            </div>
+
           </div>
+          
+         
+
         </div>
       </div>
     </form>

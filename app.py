@@ -288,8 +288,7 @@ def record_session_simulator_discovery(recipe_id):
 def can_session_continue_to_quiz(simulator_data):
     discovered_recipe_ids = get_session_discovered_simulator_recipes()
     required_recipe_ids = [recipe["id"] for recipe in simulator_data["recipes"]]
-    return all(recipe_id in discovered_recipe_ids for recipe_id in required_recipe_ids)
-
+    return len(set(discovered_recipe_ids)) >= 2
 
 def get_learning_step(learning_steps, step_number):
     for step in learning_steps:
@@ -313,38 +312,52 @@ def build_default_selections(simulator_data):
 
 def normalize_level(level, simulator_data):
     if not isinstance(level, str):
-        return None
+        return "medium"
 
     cleaned_level = level.strip().lower().replace("_", "-")
+
     normalization = simulator_data.get("normalization", {})
-    return normalization.get(cleaned_level, cleaned_level)
+
+    normalized = normalization.get(cleaned_level, cleaned_level)
+
+    if normalized not in simulator_data["levels"]:
+        return "medium"
+
+    return normalized
 
 
 def parse_simulator_selections(form_data, simulator_data):
-    selections = build_default_selections(simulator_data)
+    selections = {}
     invalid_fields = []
     allowed_levels = set(simulator_data["levels"])
 
     for ingredient in simulator_data["ingredients"]:
         key = ingredient["key"]
-        normalized_level = normalize_level(form_data.get(key), simulator_data)
+
+        raw_value = form_data.get(key)
+
+        if raw_value is None:
+            raw_value = ingredient.get("default_level", "medium")
+
+        normalized_level = normalize_level(raw_value, simulator_data)
+
         if normalized_level not in allowed_levels:
-            invalid_fields.append(ingredient["label"])
-            continue
+            normalized_level = "medium"
+
         selections[key] = normalized_level
 
     return selections, invalid_fields
 
-
 def recipe_matches(selections, recipe, simulator_data):
-    for ingredient_key, expected_levels in recipe["requirements"].items():
-        if not isinstance(expected_levels, list):
-            expected_levels = [expected_levels]
+    for ingredient_key, expected_level in recipe["requirements"].items():
 
-        normalized_expected_levels = [
-            normalize_level(level, simulator_data) for level in expected_levels
-        ]
-        if selections.get(ingredient_key) not in normalized_expected_levels:
+        # normalize ONLY selections once (safe)
+        actual = normalize_level(selections.get(ingredient_key), simulator_data)
+
+        # normalize expected once
+        expected = normalize_level(expected_level, simulator_data)
+
+        if actual != expected:
             return False
 
     return True
@@ -385,7 +398,7 @@ def learn_step(step):
 
     if step >= 3 and step <= 6:
         return redirect(url_for("learn_step", step=2))
-
+    
     step_data = get_learning_step(learning_steps, step)
 
     if step_data is None:
@@ -397,7 +410,7 @@ def learn_step(step):
     current_index = step_numbers.index(step)
     previous_step = step_numbers[current_index - 1] if current_index > 0 else None
     next_step = step_numbers[current_index + 1] if current_index < len(step_numbers) - 1 else None
-
+    
     if step == 2:
         next_step = 7
 
@@ -441,8 +454,11 @@ def simulator():
         record_simulator_entry()
     else:
         action = request.form.get("simulator_action", "bake")
+        
         if action == "reset":
             selections = build_default_selections(simulator_data)
+            result = None
+
         else:
             selections, invalid_fields = parse_simulator_selections(request.form, simulator_data)
             if invalid_fields:
@@ -452,9 +468,8 @@ def simulator():
             else:
                 result = evaluate_simulator_result(selections, simulator_data)
                 record_simulator_run(selections, result)
-                record_session_simulator_discovery(result.get("recipe_id"))
-
-    can_continue_to_quiz = can_session_continue_to_quiz(simulator_data)
+                if result and result.get("recipe_id"):
+                    record_session_simulator_discovery(result["recipe_id"])
 
     return render_template(
         "simulator.html",
@@ -462,7 +477,6 @@ def simulator():
         selections=selections,
         result=result,
         error_message=error_message,
-        can_continue_to_quiz=can_continue_to_quiz,
     )
 
 

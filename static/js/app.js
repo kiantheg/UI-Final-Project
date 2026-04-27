@@ -32,8 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
   sliders.forEach((slider) => {
     const levels = JSON.parse(slider.dataset.levels || "[]");
     const target = slider.dataset.target;
-    const hidden = document.querySelector(`[data-slider-hidden-for="${target}"]`);
-    const output = document.querySelector(`[data-slider-output-for="${target}"]`);
+    const hidden = slider.closest(".simulator-control-input")
+      ?.querySelector(`[data-slider-hidden-for="${target}"]`);    const output = document.querySelector(`[data-slider-output-for="${target}"]`);
     const labels = document.querySelectorAll(`[data-slider-label-for="${target}"]`);
 
     function syncSlider() {
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (displayTitle) {
-        displayTitle.textContent = "Choose an Ingredient";
+        displayTitle.textContent = "Hover over an ingredient on the left to see what it does.";
       }
 
       if (displayImage) {
@@ -83,14 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
         displayImage.hidden = true;
       }
 
-      if (displayBody) {
-        displayBody.textContent = "Hover over an ingredient on the left to see what it does.";
-      }
-
-      if (displayHighlight) {
-        displayHighlight.textContent = "";
-        displayHighlight.hidden = true;
-      }
+    if (displayHighlight) {
+      displayHighlight.textContent = "";
+      displayHighlight.classList.add("is-hidden");
+    }
     }
 
     function setActiveIngredient(choice) {
@@ -117,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (displayHighlight) {
         const highlight = choice.dataset.ingredientHighlight || "";
         displayHighlight.textContent = highlight;
-        displayHighlight.hidden = !highlight;
+        displayHighlight.classList.toggle("is-hidden", !highlight);
       }
     }
 
