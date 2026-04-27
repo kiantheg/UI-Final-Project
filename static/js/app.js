@@ -57,4 +57,85 @@ document.addEventListener("DOMContentLoaded", () => {
     slider.addEventListener("change", syncSlider);
     syncSlider();
   });
+
+  const ingredientChoices = document.querySelectorAll("[data-ingredient-choice]");
+
+  if (ingredientChoices.length) {
+    const ingredientMenu = document.querySelector("[data-ingredient-menu]");
+    const displayTitle = document.querySelector("[data-ingredient-display-title]");
+    const displayImage = document.querySelector("[data-ingredient-display-image]");
+    const displayBody = document.querySelector("[data-ingredient-display-body]");
+    const displayHighlight = document.querySelector("[data-ingredient-display-highlight]");
+
+    function clearActiveIngredient() {
+      ingredientChoices.forEach((item) => {
+        item.classList.remove("active");
+        item.setAttribute("aria-pressed", "false");
+      });
+
+      if (displayTitle) {
+        displayTitle.textContent = "Choose an Ingredient";
+      }
+
+      if (displayImage) {
+        displayImage.src = "";
+        displayImage.alt = "";
+        displayImage.hidden = true;
+      }
+
+      if (displayBody) {
+        displayBody.textContent = "Hover over an ingredient on the left to see what it does.";
+      }
+
+      if (displayHighlight) {
+        displayHighlight.textContent = "";
+        displayHighlight.hidden = true;
+      }
+    }
+
+    function setActiveIngredient(choice) {
+      ingredientChoices.forEach((item) => {
+        const isActive = item === choice;
+        item.classList.toggle("active", isActive);
+        item.setAttribute("aria-pressed", String(isActive));
+      });
+
+      if (displayTitle) {
+        displayTitle.textContent = choice.dataset.ingredientTitle || "";
+      }
+
+      if (displayImage) {
+        displayImage.src = choice.dataset.ingredientImage || "";
+        displayImage.alt = choice.dataset.ingredientTitle || "";
+        displayImage.hidden = !choice.dataset.ingredientImage;
+      }
+
+      if (displayBody) {
+        displayBody.textContent = choice.dataset.ingredientBody || "";
+      }
+
+      if (displayHighlight) {
+        const highlight = choice.dataset.ingredientHighlight || "";
+        displayHighlight.textContent = highlight;
+        displayHighlight.hidden = !highlight;
+      }
+    }
+
+    ingredientChoices.forEach((choice) => {
+      choice.addEventListener("mouseenter", () => setActiveIngredient(choice));
+      choice.addEventListener("focus", () => setActiveIngredient(choice));
+      choice.addEventListener("click", () => setActiveIngredient(choice));
+    });
+
+    if (ingredientMenu) {
+      ingredientMenu.addEventListener("mouseleave", clearActiveIngredient);
+      ingredientMenu.addEventListener("focusout", (event) => {
+        if (!ingredientMenu.contains(event.relatedTarget)) {
+          clearActiveIngredient();
+        }
+      });
+    }
+
+    clearActiveIngredient();
+  }
 });

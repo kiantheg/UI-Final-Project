@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, abort, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,6 +12,7 @@ QUIZ_FILE = BASE_DIR / "data" / "quiz_content.json"
 STATE_FILE = BASE_DIR / "instance" / "user_state.json"
 
 app = Flask(__name__)
+app.secret_key = "cookeria-simulator-dev"
 
 
 def load_json_file(file_path):
@@ -91,6 +92,7 @@ def reset_progress():
     state["started_at"] = timestamp()
     append_action(state, "start_clicked")
     save_state(state)
+    session.pop("simulator_discoveries", None)
 
 
 def record_learning_step(step):
@@ -175,6 +177,10 @@ def reset_quiz_progress():
     save_state(state)
 
 
+def clear_saved_results():
+    save_state(default_state())
+
+
 def record_simulator_entry():
     state = load_state()
     state["simulator_visits"] += 1
@@ -248,6 +254,41 @@ def summarize_level_usage(state):
         "label": "Most-used ingredient level",
         "value": f"{most_used_level.title()} ({counts[most_used_level]} selections)",
     }
+
+
+def get_discovered_simulator_recipes(state):
+    discovered = []
+
+    for run in state.get("simulator_runs", []):
+        recipe_id = run.get("recipe_id")
+        if recipe_id and recipe_id not in discovered:
+            discovered.append(recipe_id)
+
+    return discovered
+
+
+def get_session_discovered_simulator_recipes():
+    discovered = session.get("simulator_discoveries", [])
+    if not isinstance(discovered, list):
+        discovered = []
+    return discovered
+
+
+def record_session_simulator_discovery(recipe_id):
+    if not recipe_id:
+        return
+
+    discovered = get_session_discovered_simulator_recipes()
+    if recipe_id not in discovered:
+        discovered.append(recipe_id)
+        session["simulator_discoveries"] = discovered
+        session.modified = True
+
+
+def can_session_continue_to_quiz(simulator_data):
+    discovered_recipe_ids = get_session_discovered_simulator_recipes()
+    required_recipe_ids = [recipe["id"] for recipe in simulator_data["recipes"]]
+    return all(recipe_id in discovered_recipe_ids for recipe_id in required_recipe_ids)
 
 
 def get_learning_step(learning_steps, step_number):
@@ -341,6 +382,10 @@ def home():
 def learn_step(step):
     content = load_content()
     learning_steps = content["learning_steps"]
+
+    if step >= 3 and step <= 6:
+        return redirect(url_for("learn_step", step=2))
+
     step_data = get_learning_step(learning_steps, step)
 
     if step_data is None:
@@ -352,6 +397,13 @@ def learn_step(step):
     current_index = step_numbers.index(step)
     previous_step = step_numbers[current_index - 1] if current_index > 0 else None
     next_step = step_numbers[current_index + 1] if current_index < len(step_numbers) - 1 else None
+
+    if step == 2:
+        next_step = 7
+
+    if step == 7:
+        previous_step = 2
+
     next_url = (
         url_for("learn_step", step=next_step)
         if next_step
@@ -362,10 +414,12 @@ def learn_step(step):
         if next_step
         else step_data.get("next_button_label", "Continue to Simulator")
     )
+    ingredient_lessons = [item for item in learning_steps if item["step"] >= 3 and item["step"] <= 6]
 
     return render_template(
         "learning.html",
         step_data=step_data,
+        ingredient_lessons=ingredient_lessons,
         total_steps=len(learning_steps),
         previous_step=previous_step,
         next_step=next_step,
@@ -382,16 +436,25 @@ def simulator():
     error_message = None
 
     if request.method == "GET":
+        if "simulator_discoveries" not in session:
+            session["simulator_discoveries"] = []
         record_simulator_entry()
     else:
-        selections, invalid_fields = parse_simulator_selections(request.form, simulator_data)
-        if invalid_fields:
-            error_message = "Please choose a valid level for: {}.".format(
-                ", ".join(invalid_fields)
-            )
+        action = request.form.get("simulator_action", "bake")
+        if action == "reset":
+            selections = build_default_selections(simulator_data)
         else:
-            result = evaluate_simulator_result(selections, simulator_data)
-            record_simulator_run(selections, result)
+            selections, invalid_fields = parse_simulator_selections(request.form, simulator_data)
+            if invalid_fields:
+                error_message = "Please choose a valid level for: {}.".format(
+                    ", ".join(invalid_fields)
+                )
+            else:
+                result = evaluate_simulator_result(selections, simulator_data)
+                record_simulator_run(selections, result)
+                record_session_simulator_discovery(result.get("recipe_id"))
+
+    can_continue_to_quiz = can_session_continue_to_quiz(simulator_data)
 
     return render_template(
         "simulator.html",
@@ -399,6 +462,7 @@ def simulator():
         selections=selections,
         result=result,
         error_message=error_message,
+        can_continue_to_quiz=can_continue_to_quiz,
     )
 
 
@@ -407,6 +471,12 @@ def quiz_step(step):
     quiz_content = load_quiz_content()
     quiz_questions = quiz_content["quiz_questions"]
     question = get_quiz_question(quiz_questions, step)
+    question_ids = [item["id"] for item in quiz_questions]
+    simulator_data = load_simulator_content()
+
+    if not can_session_continue_to_quiz(simulator_data):
+        return redirect(url_for("simulator"))
+
     state = load_state()
     progress = get_quiz_progress(quiz_questions, state)
     review_mode = progress["completed"]
@@ -420,6 +490,11 @@ def quiz_step(step):
 
     if request.method == "GET":
         record_quiz_visit(step)
+        current_index = question_ids.index(step)
+        previous_review_step = question_ids[current_index - 1] if current_index > 0 else None
+        next_review_step = (
+            question_ids[current_index + 1] if current_index < len(question_ids) - 1 else None
+        )
         return render_template(
             "quiz_test.html",
             question=question,
@@ -428,6 +503,8 @@ def quiz_step(step):
             saved_correct=saved_response["correct"] if saved_response else None,
             review_index=step,
             total_questions=len(quiz_questions),
+            previous_review_step=previous_review_step,
+            next_review_step=next_review_step,
         )
 
     if review_mode:
@@ -443,6 +520,7 @@ def quiz_step(step):
         "feedback_test.html",
         question=question,
         is_correct=is_correct,
+        user_response=user_response,
         next_step=next_step,
         is_last=is_last,
     )
@@ -450,8 +528,15 @@ def quiz_step(step):
 
 @app.route("/quiz/restart", methods=["POST"])
 def restart_quiz():
+    clear_saved_results()
     reset_quiz_progress()
     return redirect(url_for("quiz_step", step=1))
+
+
+@app.route("/results/clear", methods=["POST"])
+def clear_results():
+    clear_saved_results()
+    return redirect(url_for("home"))
 
 
 @app.route("/results")

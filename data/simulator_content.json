@@ -48,10 +48,11 @@
       "cookie_type": "Flat Cookie",
       "requirements": {
         "butter": "high",
+        "brown_sugar": "low",
         "white_sugar": "medium",
         "flour": "low"
       },
-      "explanation": "High butter increases spread and low flour gives the dough less structure, so the cookie bakes flat."
+      "explanation": "High butter increases spread, low flour gives the dough less structure, and keeping brown sugar low helps the cookie bake flat."
     },
     {
       "id": "chewy_cookie",
@@ -59,32 +60,32 @@
       "requirements": {
         "butter": "medium",
         "brown_sugar": "high",
-        "flour": [
-          "medium",
-          "high"
-        ]
+        "white_sugar": "low",
+        "flour": "medium"
       },
-      "explanation": "High brown sugar adds moisture and medium-to-high flour gives enough structure, so the cookie turns out chewy."
+      "explanation": "High brown sugar adds moisture, medium flour gives the dough structure, and low white sugar helps the cookie stay chewy."
     },
     {
       "id": "thick_cookie",
       "cookie_type": "Thick Cookie",
       "requirements": {
         "butter": "low",
-        "brown_sugar": "medium",
+        "brown_sugar": "low",
+        "white_sugar": "low",
         "flour": "high"
       },
-      "explanation": "Low butter limits spread while high flour adds structure, so the cookie stays thick."
+      "explanation": "Low butter limits spread, high flour adds structure, and keeping both sugars low helps the cookie stay thick."
     },
     {
       "id": "crispy_cookie",
       "cookie_type": "Crispy Cookie",
       "requirements": {
         "butter": "high",
+        "brown_sugar": "low",
         "white_sugar": "high",
         "flour": "medium"
       },
-      "explanation": "High butter and high white sugar encourage spread and crispiness, while medium flour keeps the cookie from getting too thick."
+      "explanation": "High butter and high white sugar encourage spread and crispiness, while medium flour and low brown sugar keep the cookie from getting too soft."
     }
   ],
   "fallback_result": {
