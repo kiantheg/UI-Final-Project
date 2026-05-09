@@ -14,32 +14,34 @@
   "thick_cookie": "thick.png",
   "crispy_cookie": "crispy.png"
 } %}
+{% set all_cookie_targets = [
+  ("flat_cookie", "Flat"),
+  ("chewy_cookie", "Chewy"),
+  ("thick_cookie", "Thick"),
+  ("crispy_cookie", "Crispy")
+] %}
 <section class="learn-game simulator-game">
   <div class="learn-stage simulator-stage">
     <form method="post" class="simulator-layout">
-      <div class="ingredient-menu simulator-panel simulator-control-board">
-        {% if error_message %}
-          <div class="simulator-error" role="alert">{{ error_message }}</div>
-        {% endif %}
 
+      {% if error_message %}
+        <div class="simulator-error" role="alert">{{ error_message }}</div>
+      {% endif %}
+
+      <div class="ingredient-menu simulator-control-board">
         <div class="simulator-control-grid">
           {% for ingredient in simulator["ingredients"] %}
             {% set current_level = selections[ingredient["key"]] %}
             {% set current_index = simulator["levels"].index(current_level) %}
-
             <div class="ingredient-menu-row simulator-control-row simulator-control-tile">
               <img
                 src="{{ url_for('static', filename='images/' ~ ingredient_images[ingredient['key']]) }}"
                 alt="{{ ingredient['label'] }}"
                 class="simulator-ingredient-image"
               >
-
               <div class="simulator-control-input">
                 <label class="simulator-control-label simulator-control-label--compact"
-                      for="{{ ingredient["key"] }}">
-                  {{ ingredient["label"] }}
-                </label>
-
+                       for="{{ ingredient["key"] }}">{{ ingredient["label"] }}</label>
                 <input
                   name="{{ ingredient['key'] }}"
                   type="hidden"
@@ -47,23 +49,20 @@
                   data-slider-hidden-for="{{ ingredient['key'] }}"
                 >
                 <input class="ingredient-slider"
-                      id="{{ ingredient["key"] }}"
-                      type="range"
-                      min="0"
-                      max="{{ simulator['levels']|length - 1 }}"
-                      step="1"
-                      value="{{ current_index }}"
-                      data-level-slider
-                      data-target="{{ ingredient['key'] }}"
-                      data-levels='{{ simulator["levels"] | tojson }}'>
-
+                       id="{{ ingredient["key"] }}"
+                       type="range"
+                       min="0"
+                       max="{{ simulator['levels']|length - 1 }}"
+                       step="1"
+                       value="{{ current_index }}"
+                       data-level-slider
+                       data-target="{{ ingredient['key'] }}"
+                       data-levels='{{ simulator["levels"] | tojson }}'>
                 <div class="slider-labels" aria-hidden="true">
                   {% for level in simulator["levels"] %}
                     <span class="{% if level == current_level %}is-active{% endif %}"
                           data-slider-label-for="{{ ingredient["key"] }}"
-                          data-level="{{ level }}">
-                      {{ level|title }}
-                    </span>
+                          data-level="{{ level }}">{{ level|upper }}</span>
                   {% endfor %}
                 </div>
               </div>
@@ -72,94 +71,87 @@
         </div>
       </div>
 
-      <div class="simulator-actions">
-        <button type="submit" name="simulator_action" value="bake" class="learn-next-btn">
-          {{ simulator["page"]["bake_button_label"]|upper }}
-        </button>
-        <button type="submit" name="simulator_action" value="reset" class="learn-secondary-btn">
-          TRY ANOTHER COMBO
-        </button>
-      </div>
-
       <div class="simulator-bottom-row">
-        <div class="ingredient-info-card simulator-guide-card">
-          {% if result %}
-            {% if result["recipe_id"] %}
-              
-              {% if result["recipe_id"] == "flat_cookie" %}
-                {% set helper_text = "Yay! You made a flat cookie. High butter and low flour helped it spread. Try another combo!" %}
-              {% elif result["recipe_id"] == "chewy_cookie" %}
-                {% set helper_text = "Yay! You made a chewy cookie. Brown sugar helped keep it soft. Try another combo!" %}
-              {% elif result["recipe_id"] == "thick_cookie" %}
-                {% set helper_text = "Yay! You made a thick cookie. More flour helped it hold its shape. Try another combo!" %}
-              {% elif result["recipe_id"] == "crispy_cookie" %}
-                {% set helper_text = "Yay! You made a crispy cookie. White sugar helped it crisp up. Try another combo!" %}
+
+        <div class="simulator-left-col">
+          <div class="simulator-hint-card">
+            {% if result %}
+              {% if result["recipe_id"] %}
+                {% if result["recipe_id"] == "flat_cookie" %}
+                  {% set hint_title = "This cookie spread while baking!" %}
+                {% elif result["recipe_id"] == "chewy_cookie" %}
+                  {% set hint_title = "This cookie is soft and chewy." %}
+                {% elif result["recipe_id"] == "thick_cookie" %}
+                  {% set hint_title = "This cookie stayed tall while baking." %}
+                {% elif result["recipe_id"] == "crispy_cookie" %}
+                  {% set hint_title = "This cookie is thin with crunchy edges." %}
+                {% else %}
+                  {% set hint_title = result["cookie_type"] ~ "." %}
+                {% endif %}
+                <p class="simulator-hint-title">{{ hint_title }}</p>
+                <p class="simulator-hint-body">{{ result["explanation"] }}</p>
               {% else %}
-                {% set helper_text = "Yay! " ~ result["cookie_type"] ~ "." %}
+                <p class="simulator-hint-title">Oops, that mix made goop.</p>
+                <p class="simulator-hint-body">Try a different combination of ingredients.</p>
               {% endif %}
             {% else %}
-              {% set helper_text = "Oops, that mix made goop. Try a different combination." %}
+              <p class="simulator-hint-title">Discover all 4 cookie types!</p>
+              <p class="simulator-hint-body">Adjust the sliders and press BAKE to see what you make.</p>
             {% endif %}
-          {% else %}
-            {% set helper_text = "Try different ingredient levels, then bake to see your cookie." %}
-          {% endif %}
-          <div class="simulator-guide-content">
-            <img
-              src="{{ url_for('static', filename='images/2.png') }}"
-              alt="Cookie cat"
-              class="learn-cat learn-cat-small learn-cat-speaking simulator-guide-cat"
-            >
-            <div
-              class="learn-bubble learn-bubble--plain learn-bubble--talking simulator-guide-bubble"
-              data-typewriter="{{ helper_text }}"
-            >
-              {{ helper_text }}
-            </div>
-          </div>
 
-           <div class="ready-buttons simulator-result-actions">
-              <a href="{{ url_for('learn_step', step=7) }}" class="learn-secondary-btn">
-                {{ simulator["page"]["back_button_label"]|upper }}
-              </a>
-              <a href="{{ url_for('quiz_step', step=1) }}" class="learn-next-btn">
-                {{ simulator["page"]["next_button_label"]|upper }}
-              </a>
-            </div>
-
-         
-
-        </div>
-
-        <div class="simulator-result-column">
-          <div class="ingredient-info-card simulator-result-card{% if not result %} simulator-result-card--empty{% endif %}">
-            <div class="ingredient-info-card__header simulator-result-header">
-              <div class="ready-kicker">
-                Output{% if result %}: {% if result["recipe_id"] %}{{ result["cookie_type"] }}{% else %}Goop{% endif %}{% endif %}
-              </div>
-            </div>
-
-            {% if result %}
-              <div class="simulator-cookie-preview">
-                {% if result["recipe_id"] and result["recipe_id"] in cookie_images %}
-                  <img
-                    src="{{ url_for('static', filename='images/' ~ cookie_images[result['recipe_id']]) }}"
-                    alt="{{ result['cookie_type'] }}"
-                    class="simulator-cookie-image"
-                  >
-                {% endif %}
-              </div>
-                <div class="simulator-result-explanation">
-                  {{ result["explanation"] }}
+            <div class="simulator-discovery-grid">
+              {% for recipe_id, name in all_cookie_targets %}
+                {% set is_done = recipe_id in discovered_recipes %}
+                <div class="simulator-discovery-card{% if is_done %} simulator-discovery-card--done{% endif %}">
+                  {% if is_done and recipe_id in cookie_images %}
+                    <img
+                      src="{{ url_for('static', filename='images/' ~ cookie_images[recipe_id]) }}"
+                      alt="{{ name }}"
+                      class="simulator-discovery-img"
+                    >
+                  {% else %}
+                    <span class="simulator-discovery-placeholder">?</span>
+                  {% endif %}
+                  <span class="simulator-discovery-label{% if not is_done %} simulator-discovery-label--locked{% endif %}">
+                    {% if is_done %}✓ {% endif %}{{ name }}
+                  </span>
                 </div>
-
-              {% endif %}
-
+              {% endfor %}
+            </div>
           </div>
-          
-         
-
         </div>
+
+        <div class="simulator-right-col">
+          <div class="simulator-output-label">
+            {% if result and result["recipe_id"] %}
+              {{ result["cookie_type"]|upper }}
+            {% elif result and not result["recipe_id"] %}
+              GOOP!
+            {% else %}
+              OUTPUT
+            {% endif %}
+          </div>
+          <div class="simulator-result-box{% if not result or not result['recipe_id'] %} simulator-result-box--empty{% endif %}">
+            {% if result and result["recipe_id"] and result["recipe_id"] in cookie_images %}
+              <img
+                src="{{ url_for('static', filename='images/' ~ cookie_images[result['recipe_id']]) }}"
+                alt="{{ result['cookie_type'] }}"
+                class="simulator-cookie-image"
+              >
+            {% endif %}
+          </div>
+          <div class="simulator-actions">
+            <a href="{{ url_for('quiz_step', step=1) }}" class="sim-btn sim-btn--secondary">
+              CONTINUE TO QUIZ
+            </a>
+            <button type="submit" name="simulator_action" value="bake" class="sim-btn sim-btn--primary">
+              BAKE!
+            </button>
+          </div>
+        </div>
+
       </div>
+
     </form>
   </div>
 </section>

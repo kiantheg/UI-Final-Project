@@ -285,9 +285,8 @@ def record_session_simulator_discovery(recipe_id):
         session.modified = True
 
 
-def can_session_continue_to_quiz(simulator_data):
+def can_session_continue_to_quiz():
     discovered_recipe_ids = get_session_discovered_simulator_recipes()
-    required_recipe_ids = [recipe["id"] for recipe in simulator_data["recipes"]]
     return len(set(discovered_recipe_ids)) >= 2
 
 def get_learning_step(learning_steps, step_number):
@@ -477,6 +476,7 @@ def simulator():
         selections=selections,
         result=result,
         error_message=error_message,
+        discovered_recipes=get_session_discovered_simulator_recipes(),
     )
 
 
@@ -486,9 +486,8 @@ def quiz_step(step):
     quiz_questions = quiz_content["quiz_questions"]
     question = get_quiz_question(quiz_questions, step)
     question_ids = [item["id"] for item in quiz_questions]
-    simulator_data = load_simulator_content()
 
-    if not can_session_continue_to_quiz(simulator_data):
+    if not can_session_continue_to_quiz():
         return redirect(url_for("simulator"))
 
     state = load_state()
