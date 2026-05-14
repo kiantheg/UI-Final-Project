@@ -23,48 +23,10 @@
       >
     </div>
 
-    <div class="learn-two-column quiz-two-column">
-      <aside class="ingredient-menu quiz-sidebar-panel">
-        <div class="ingredient-menu-header">
-          <h1 class="learn-title">Question {{ question.id }}</h1>
-          <p class="quiz-sidebar-copy">
-            {% if review_mode %}
-              Review your completed quiz answers without changing them.
-            {% else %}
-              Apply the ingredient rules from the lesson and choose the strongest answer before moving on.
-            {% endif %}
-          </p>
-        </div>
-
-        <div class="ingredient-menu-row quiz-status-row">
-          <span>{{ "Ingredient Mix" if question.type == "ingredient" else "Fix the Cookie" }}</span>
-        </div>
-        <div class="ingredient-menu-row quiz-status-row">
-          <span>{% if review_mode %}Review Mode{% else %}Step by Step{% endif %}</span>
-        </div>
-
-        <div class="quiz-tip-card">
-          <h2>{% if question.type == "ingredient" %}How to think about it{% else %}Use the lesson clues{% endif %}</h2>
-          <p>
-            {% if question.type == "ingredient" %}
-              {{ question.hint }}
-            {% else %}
-              Think about which ingredient shifts spread, crispiness, thickness, or chewiness in the right direction.
-            {% endif %}
-          </p>
-        </div>
-
-        {% if review_mode %}
-          <div class="ready-buttons quiz-sidebar-actions">
-            <a href="{{ url_for('results') }}" class="learn-secondary-btn">BACK TO RESULTS</a>
-          </div>
-        {% endif %}
-      </aside>
-
       <div class="ingredient-info-card quiz-question-card">
         {% if question.type == "ingredient" %}
           <div class="ingredient-info-card__header quiz-question-header">
-            <div class="ready-kicker">Cookie Goal</div>
+          <h1 class="learn-title">Question {{ question.id }}</h1>
             <h2>{{ question.goal }}</h2>
           </div>
 
@@ -277,6 +239,6 @@
         {% endif %}
       </div>
     </div>
-  </div>
+ 
 </section>
 {% endblock %}
