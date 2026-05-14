@@ -47,9 +47,9 @@
       <div class="results-summary-card">
         <div class="feedback-mini-card__label">Next Actions</div>
         <div class="results-actions">
-          <a class="learn-next-btn" href="{{ url_for('home') }}">{{ quiz_end_page.button_text }}</a>
+          <a class="learn-secondary-btn results-home-btn" href="{{ url_for('home') }}">BACK TO HOME</a>
           <form method="post" action="{{ url_for('restart_quiz') }}">
-            <button type="submit" class="learn-secondary-btn results-action-btn">CLEAR RESULTS + RETAKE QUIZ</button>
+            <button type="submit" class="learn-next-btn results-action-btn">RESET QUIZ</button>
           </form>
         </div>
       </div>

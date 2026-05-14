@@ -2,14 +2,16 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, redirect, render_template, request, url_for as flask_url_for
 
 
 BASE_DIR = Path(__file__).resolve().parent
 CONTENT_FILE = BASE_DIR / "data" / "course_content.json"
 SIMULATOR_FILE = BASE_DIR / "data" / "simulator_content.json"
 QUIZ_FILE = BASE_DIR / "data" / "quiz_content.json"
-STATE_FILE = BASE_DIR / "instance" / "user_state.json"
+TAB_SESSION_PARAM = "tab_session_id"
+TAB_STATE_TTL_SECONDS = 60 * 60 * 4
+TAB_STATES = {}
 
 app = Flask(__name__)
 app.secret_key = "cookeria-simulator-dev"
@@ -40,7 +42,7 @@ def timestamp():
 
 
 def default_state():
-    """Single-user progress storage for this project phase."""
+    """Per-tab progress storage for the active browser tab."""
     return {
         "started": False,
         "started_at": None,
@@ -49,24 +51,69 @@ def default_state():
         "learning_selections": [],
         "simulator_visits": 0,
         "simulator_runs": [],
+        "simulator_discoveries": [],
         "quiz_answers": [],
         "actions": [],
     }
 
 
+def current_timestamp():
+    return datetime.now().timestamp()
+
+
+def prune_tab_states():
+    cutoff = current_timestamp() - TAB_STATE_TTL_SECONDS
+    expired_tokens = [
+        token for token, state in TAB_STATES.items()
+        if state.get("last_seen_at", 0) < cutoff
+    ]
+    for token in expired_tokens:
+        TAB_STATES.pop(token, None)
+
+
+def get_tab_session_id():
+    token = request.values.get(TAB_SESSION_PARAM) or request.args.get(TAB_SESSION_PARAM)
+    if not isinstance(token, str):
+        return None
+
+    cleaned = token.strip()
+    return cleaned or None
+
+
+def tab_url_for(endpoint, **values):
+    if endpoint != "static":
+        token = values.get(TAB_SESSION_PARAM) or get_tab_session_id()
+        if token:
+            values[TAB_SESSION_PARAM] = token
+    return flask_url_for(endpoint, **values)
+
+
+@app.context_processor
+def inject_tab_url_for():
+    return {"url_for": tab_url_for}
+
+
 def save_state(state):
-    STATE_FILE.parent.mkdir(exist_ok=True)
+    token = get_tab_session_id()
+    if not token:
+        return
+
+    prune_tab_states()
     state["last_updated"] = timestamp()
-    with STATE_FILE.open("w", encoding="utf-8") as state_file:
-        json.dump(state, state_file, indent=2)
+    state["last_seen_at"] = current_timestamp()
+    TAB_STATES[token] = state
 
 
 def load_state():
-    if not STATE_FILE.exists():
-        save_state(default_state())
+    prune_tab_states()
+    token = get_tab_session_id()
 
-    with STATE_FILE.open(encoding="utf-8") as state_file:
-        state = json.load(state_file)
+    if not token:
+        state = default_state()
+    else:
+        state = TAB_STATES.get(token)
+        if not isinstance(state, dict):
+            state = default_state()
 
     state_updated = False
     for key, value in default_state().items():
@@ -76,6 +123,9 @@ def load_state():
 
     if state_updated:
         save_state(state)
+    elif token:
+        state["last_seen_at"] = current_timestamp()
+        TAB_STATES[token] = state
 
     return state
 
@@ -92,7 +142,6 @@ def reset_progress():
     state["started_at"] = timestamp()
     append_action(state, "start_clicked")
     save_state(state)
-    session.pop("simulator_discoveries", None)
 
 
 def record_learning_step(step):
@@ -170,15 +219,10 @@ def record_quiz_answer(step, question, user_response, is_correct):
     save_state(state)
 
 
-def reset_quiz_progress():
-    state = load_state()
-    state["quiz_answers"] = []
-    append_action(state, "quiz_restarted")
-    save_state(state)
-
-
 def clear_saved_results():
-    save_state(default_state())
+    token = get_tab_session_id()
+    if token:
+        TAB_STATES.pop(token, None)
 
 
 def record_simulator_entry():
@@ -268,7 +312,7 @@ def get_discovered_simulator_recipes(state):
 
 
 def get_session_discovered_simulator_recipes():
-    discovered = session.get("simulator_discoveries", [])
+    discovered = load_state().get("simulator_discoveries", [])
     if not isinstance(discovered, list):
         discovered = []
     return discovered
@@ -278,15 +322,16 @@ def record_session_simulator_discovery(recipe_id):
     if not recipe_id:
         return
 
-    discovered = get_session_discovered_simulator_recipes()
+    state = load_state()
+    discovered = state.get("simulator_discoveries", [])
     if recipe_id not in discovered:
         discovered.append(recipe_id)
-        session["simulator_discoveries"] = discovered
-        session.modified = True
+        state["simulator_discoveries"] = discovered
+        save_state(state)
 
 
 def can_session_continue_to_quiz():
-    discovered_recipe_ids = get_session_discovered_simulator_recipes()
+    discovered_recipe_ids = load_state().get("simulator_discoveries", [])
     return len(set(discovered_recipe_ids)) >= 2
 
 def get_learning_step(learning_steps, step_number):
@@ -385,7 +430,7 @@ def home():
 
     if request.method == "POST":
         reset_progress()
-        return redirect(url_for("learn_step", step=1))
+        return redirect(tab_url_for("learn_step", step=1))
 
     return render_template("home.html", home=content["home"])
 
@@ -396,7 +441,7 @@ def learn_step(step):
     learning_steps = content["learning_steps"]
 
     if step >= 3 and step <= 6:
-        return redirect(url_for("learn_step", step=2))
+        return redirect(tab_url_for("learn_step", step=2))
     
     step_data = get_learning_step(learning_steps, step)
 
@@ -417,9 +462,9 @@ def learn_step(step):
         previous_step = 2
 
     next_url = (
-        url_for("learn_step", step=next_step)
+        tab_url_for("learn_step", step=next_step)
         if next_step
-        else url_for("simulator")
+        else tab_url_for("simulator")
     )
     next_button_label = (
         step_data.get("next_button_label", "Continue")
@@ -448,8 +493,6 @@ def simulator():
     error_message = None
 
     if request.method == "GET":
-        if "simulator_discoveries" not in session:
-            session["simulator_discoveries"] = []
         record_simulator_entry()
     else:
         action = request.form.get("simulator_action", "bake")
@@ -488,7 +531,7 @@ def quiz_step(step):
     question_ids = [item["id"] for item in quiz_questions]
 
     if not can_session_continue_to_quiz():
-        return redirect(url_for("simulator"))
+        return redirect(tab_url_for("simulator"))
 
     state = load_state()
     progress = get_quiz_progress(quiz_questions, state)
@@ -496,10 +539,10 @@ def quiz_step(step):
     saved_response = get_quiz_response_for_step(state, step)
 
     if question is None:
-        return redirect(url_for("results"))
+        return redirect(tab_url_for("results"))
 
     if not review_mode and step != progress["next_step"]:
-        return redirect(url_for("quiz_step", step=progress["next_step"]))
+        return redirect(tab_url_for("quiz_step", step=progress["next_step"]))
 
     if request.method == "GET":
         record_quiz_visit(step)
@@ -521,7 +564,7 @@ def quiz_step(step):
         )
 
     if review_mode:
-        return redirect(url_for("quiz_step", step=step))
+        return redirect(tab_url_for("quiz_step", step=step))
 
     is_correct, user_response = check_quiz_answer(question, request.form)
     record_quiz_answer(step, question, user_response, is_correct)
@@ -542,14 +585,13 @@ def quiz_step(step):
 @app.route("/quiz/restart", methods=["POST"])
 def restart_quiz():
     clear_saved_results()
-    reset_quiz_progress()
-    return redirect(url_for("quiz_step", step=1))
+    return redirect(tab_url_for("quiz_step", step=1))
 
 
 @app.route("/results/clear", methods=["POST"])
 def clear_results():
     clear_saved_results()
-    return redirect(url_for("home"))
+    return redirect(tab_url_for("home"))
 
 
 @app.route("/results")

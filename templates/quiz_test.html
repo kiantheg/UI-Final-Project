@@ -161,6 +161,7 @@
                 {% endif %}
               </div>
               <div class="learn-bottom-nav quiz-bottom-nav quiz-bottom-nav--review">
+                <a href="{{ url_for('results') }}" class="learn-secondary-btn quiz-results-btn">BACK TO RESULTS</a>
                 {% if previous_review_step %}
                   <a href="{{ url_for('quiz_step', step=previous_review_step) }}" class="learn-secondary-btn">PREV</a>
                 {% endif %}
@@ -223,6 +224,7 @@
                 {% endif %}
               </div>
               <div class="learn-bottom-nav quiz-bottom-nav quiz-bottom-nav--review">
+                <a href="{{ url_for('results') }}" class="learn-secondary-btn quiz-results-btn">BACK TO RESULTS</a>
                 {% if previous_review_step %}
                   <a href="{{ url_for('quiz_step', step=previous_review_step) }}" class="learn-secondary-btn">PREV</a>
                 {% endif %}

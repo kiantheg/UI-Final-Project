@@ -5,21 +5,29 @@
 <section class="page-shell page-shell--compact">
   <div class="feedback-page-layout">
     <div class="feedback-hero-card">
-      <div class="ready-kicker">Quiz Feedback</div>
-      <h1 class="feedback-title">
-        {% if is_correct %}
-          {{ question.feedback_title or "Correct!" }}
-        {% else %}
-          Not Quite Yet
-        {% endif %}
-      </h1>
-      <p class="feedback-subtitle">
-        {% if is_correct %}
-          Nice bake. You matched the cookie rule.
-        {% else %}
-          Quick recap, then move to the next bake.
-        {% endif %}
-      </p>
+      <div class="feedback-status-row">
+        <div class="ready-kicker">Quiz Feedback</div>
+        <div class="feedback-badge {% if is_correct %}feedback-badge--correct{% else %}feedback-badge--retry{% endif %}">
+          {% if is_correct %}Correct{% else %}Incorrect{% endif %}
+        </div>
+      </div>
+
+      <div class="feedback-heading-block">
+        <h1 class="feedback-title">
+          {% if is_correct %}
+            {{ question.feedback_title or "Nice Bake" }}
+          {% else %}
+            Not Quite Yet
+          {% endif %}
+        </h1>
+        <p class="feedback-subtitle">
+          {% if is_correct %}
+            Nice bake. You matched the cookie rule.
+          {% else %}
+            Quick recap, then move to the next bake.
+          {% endif %}
+        </p>
+      </div>
 
       <div class="feedback-actions">
         {% if is_last %}
@@ -50,7 +58,7 @@
           </div>
         </div>
 
-        <div class="feedback-mini-card feedback-mini-card--wide">
+        <div class="feedback-mini-card feedback-mini-card--wide feedback-mini-card--explanation">
           <div class="feedback-mini-card__label">Why</div>
           <p>{{ question.feedback_text }}</p>
         </div>
@@ -65,7 +73,7 @@
           <p>{{ question.correct_answer }}</p>
         </div>
 
-        <div class="feedback-mini-card feedback-mini-card--wide">
+        <div class="feedback-mini-card feedback-mini-card--wide feedback-mini-card--explanation">
           <div class="feedback-mini-card__label">Why</div>
           <p>{{ question.feedback_text }}</p>
         </div>
